@@ -1,0 +1,481 @@
+/* ─── Reset ─────────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ─── Design tokens (light theme) ───────────────────────────────────────── */
+:root {
+  --ifk-color-bg:         #ffffff;
+  --ifk-color-text:       #1a1a1a;
+  --ifk-color-accent:     #2563eb;
+  --ifk-color-accent-fg:  #ffffff;  /* text color on filled accent button */
+  --ifk-color-surface:    #f5f5f5;
+  --ifk-color-border:     #dddddd;
+
+  --ifk-font-size-base:   1rem;
+  --ifk-radius:           6px;
+  --ifk-spacing:          1rem;
+
+  --ifk-max-width:        720px;
+}
+
+/* ─── Dark theme (explicit attribute) ───────────────────────────────────── */
+[data-theme="dark"] {
+  --ifk-color-bg:         #111111;
+  --ifk-color-text:       #f0f0f0;
+  --ifk-color-accent:     #60a5fa;
+  --ifk-color-accent-fg:  #0f172a;
+  --ifk-color-surface:    #1e1e1e;
+  --ifk-color-border:     #333333;
+}
+
+/* ─── Dark theme (system preference fallback) ───────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ifk-color-bg:         #111111;
+    --ifk-color-text:       #f0f0f0;
+    --ifk-color-accent:     #60a5fa;
+    --ifk-color-accent-fg:  #0f172a;
+    --ifk-color-surface:    #1e1e1e;
+    --ifk-color-border:     #333333;
+  }
+}
+
+/* ─── Base ───────────────────────────────────────────────────────────────── */
+html,
+body {
+  height: 100%;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: var(--ifk-font-size-base);
+  background-color: var(--ifk-color-bg);
+  color: var(--ifk-color-text);
+  line-height: 1.6;
+}
+
+/* ─── Controls nav ───────────────────────────────────────────────────────── */
+#controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--ifk-spacing) * 0.5);
+  padding: calc(var(--ifk-spacing) * 0.75) var(--ifk-spacing);
+  border-bottom: 1px solid var(--ifk-color-border);
+  background-color: var(--ifk-color-surface);
+}
+
+#controls button {
+  padding: 0.375rem 0.75rem;
+  font-size: calc(var(--ifk-font-size-base) * 0.875);
+  border: 1px solid var(--ifk-color-border);
+  border-radius: var(--ifk-radius);
+  background-color: var(--ifk-color-bg);
+  color: var(--ifk-color-text);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+#controls button:hover {
+  background-color: var(--ifk-color-surface);
+}
+
+#controls button:focus-visible {
+  outline: 2px solid var(--ifk-color-accent);
+  outline-offset: 2px;
+}
+
+/* ─── Main content area ──────────────────────────────────────────────────── */
+#content {
+  max-width: var(--ifk-max-width);
+  margin: 0 auto;
+  padding: var(--ifk-spacing);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ifk-spacing);
+}
+
+/* ─── Static zone ────────────────────────────────────────────────────────── */
+#static {
+  padding-bottom: var(--ifk-spacing);
+  border-bottom: 1px solid var(--ifk-color-border);
+  font-size: calc(var(--ifk-font-size-base) * 0.875);
+  color: var(--ifk-color-text);
+  opacity: 0.75;
+}
+
+/* ─── Scene content zone ─────────────────────────────────────────────────── */
+#scene-content {
+  outline: none; /* receives programmatic focus — no focus ring needed */
+}
+
+#scene-content > * + * {
+  margin-top: calc(var(--ifk-spacing) * 0.5);
+}
+
+/* ─── Acts zone ──────────────────────────────────────────────────────────── */
+#scene-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--ifk-spacing) * 0.5);
+}
+
+/* ─── Gotos zone ─────────────────────────────────────────────────────────── */
+#scene-gotos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--ifk-spacing) * 0.5);
+}
+
+/* ─── Act buttons (outlined) ─────────────────────────────────────────────── */
+.btn-act {
+  padding: 0.5rem 1rem;
+  font-size: var(--ifk-font-size-base);
+  border: 2px solid var(--ifk-color-accent);
+  border-radius: var(--ifk-radius);
+  background-color: transparent;
+  color: var(--ifk-color-accent);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.btn-act:hover {
+  background-color: var(--ifk-color-accent);
+  color: var(--ifk-color-accent-fg);
+}
+
+.btn-act:focus-visible {
+  outline: 2px solid var(--ifk-color-accent);
+  outline-offset: 2px;
+}
+
+/* ─── Goto buttons (filled) ──────────────────────────────────────────────── */
+.btn-goto {
+  padding: 0.5rem 1.25rem;
+  font-size: var(--ifk-font-size-base);
+  border: 2px solid transparent;
+  border-radius: var(--ifk-radius);
+  background-color: var(--ifk-color-accent);
+  color: var(--ifk-color-accent-fg);
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.btn-goto:hover {
+  opacity: 0.88;
+}
+
+.btn-goto:focus-visible {
+  outline: 2px solid var(--ifk-color-accent);
+  outline-offset: 3px;
+}
+
+/* ─── Responsive: desktop (≥ 768px) ─────────────────────────────────────── */
+@media (min-width: 768px) {
+  #content {
+    padding: calc(var(--ifk-spacing) * 1.5) var(--ifk-spacing);
+  }
+}
+
+/* ─── Responsive: mobile (< 480px) ──────────────────────────────────────── */
+@media (max-width: 480px) {
+  #content {
+    padding: calc(var(--ifk-spacing) * 0.75);
+  }
+
+  .btn-act,
+  .btn-goto {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* ─── Settings modal backdrop ────────────────────────────────────────────── */
+.ifk-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--ifk-spacing);
+}
+
+.ifk-modal-backdrop[aria-hidden="true"] {
+  display: none;
+}
+
+/* ─── Settings modal dialog ──────────────────────────────────────────────── */
+.ifk-modal-dialog {
+  background-color: var(--ifk-color-bg);
+  border: 1px solid var(--ifk-color-border);
+  border-radius: var(--ifk-radius);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ─── Modal header ───────────────────────────────────────────────────────── */
+.ifk-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--ifk-spacing);
+  border-bottom: 1px solid var(--ifk-color-border);
+}
+
+.ifk-modal-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--ifk-color-text);
+}
+
+.ifk-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: var(--ifk-color-text);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--ifk-radius);
+  line-height: 1;
+  opacity: 0.6;
+  transition: opacity 0.15s ease;
+}
+
+.ifk-modal-close:hover { opacity: 1; }
+
+.ifk-modal-close:focus-visible {
+  outline: 2px solid var(--ifk-color-accent);
+  outline-offset: 2px;
+  opacity: 1;
+}
+
+/* ─── Modal body ─────────────────────────────────────────────────────────── */
+.ifk-modal-body {
+  padding: var(--ifk-spacing);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ifk-spacing) * 1.25);
+}
+
+.ifk-settings-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ifk-spacing);
+}
+
+.ifk-settings-label {
+  flex-shrink: 0;
+  width: 5rem;
+  font-size: calc(var(--ifk-font-size-base) * 0.875);
+  color: var(--ifk-color-text);
+  opacity: 0.75;
+}
+
+/* ─── Theme button group ──────────────────────────────────────────────────── */
+.ifk-theme-group {
+  display: flex;
+  border: 1px solid var(--ifk-color-border);
+  border-radius: var(--ifk-radius);
+  overflow: hidden;
+}
+
+.ifk-theme-btn {
+  flex: 1;
+  padding: 0.375rem 0.5rem;
+  font-size: calc(var(--ifk-font-size-base) * 0.8125);
+  border: none;
+  border-right: 1px solid var(--ifk-color-border);
+  background-color: var(--ifk-color-bg);
+  color: var(--ifk-color-text);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.ifk-theme-btn:last-child { border-right: none; }
+
+.ifk-theme-btn:hover { background-color: var(--ifk-color-surface); }
+
+.ifk-theme-btn--active {
+  background-color: var(--ifk-color-accent);
+  color: var(--ifk-color-accent-fg);
+}
+
+.ifk-theme-btn:focus-visible {
+  outline: 2px solid var(--ifk-color-accent);
+  outline-offset: -2px;
+}
+
+/* ─── Range sliders ──────────────────────────────────────────────────────── */
+.ifk-range-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.ifk-range-wrap input[type="range"] {
+  flex: 1;
+  accent-color: var(--ifk-color-accent);
+  cursor: pointer;
+}
+
+.ifk-range-val {
+  font-size: calc(var(--ifk-font-size-base) * 0.8125);
+  color: var(--ifk-color-text);
+  opacity: 0.75;
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+/* ─── Modal footer ───────────────────────────────────────────────────────── */
+.ifk-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--ifk-spacing) * 0.75) var(--ifk-spacing);
+  border-top: 1px solid var(--ifk-color-border);
+  background-color: var(--ifk-color-surface);
+  gap: calc(var(--ifk-spacing) * 0.5);
+}
+
+.ifk-modal-footer-actions {
+  display: flex;
+  gap: calc(var(--ifk-spacing) * 0.5);
+}
+
+.ifk-btn-ghost {
+  padding: 0.375rem 0.75rem;
+  font-size: calc(var(--ifk-font-size-base) * 0.875);
+  border: 1px solid var(--ifk-color-border);
+  border-radius: var(--ifk-radius);
+  background-color: transparent;
+  color: var(--ifk-color-text);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.ifk-btn-ghost:hover { background-color: var(--ifk-color-surface); }
+
+.ifk-btn-ghost:focus-visible {
+  outline: 2px solid var(--ifk-color-accent);
+  outline-offset: 2px;
+}
+
+/* ─── Saves modal specifics ──────────────────────────────────────────────── */
+.ifk-saves-dialog {
+  max-width: 560px;
+}
+
+.ifk-saves-body {
+  padding: calc(var(--ifk-spacing) * 0.5) var(--ifk-spacing);
+  gap: 0;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+/* ─── Save slot card ─────────────────────────────────────────────────────── */
+.ifk-slot {
+  display: flex;
+  align-items: center;
+  gap: var(--ifk-spacing);
+  padding: calc(var(--ifk-spacing) * 0.75) 0;
+  border-bottom: 1px solid var(--ifk-color-border);
+}
+
+.ifk-slot:last-child {
+  border-bottom: none;
+}
+
+.ifk-slot--auto {
+  background-color: var(--ifk-color-surface);
+  margin: 0 calc(-1 * var(--ifk-spacing));
+  padding-left: var(--ifk-spacing);
+  padding-right: var(--ifk-spacing);
+  border-bottom-color: var(--ifk-color-border);
+}
+
+.ifk-slot-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ifk-slot-num {
+  font-size: calc(var(--ifk-font-size-base) * 0.75);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ifk-color-text);
+  opacity: 0.5;
+}
+
+.ifk-slot-meta {
+  font-size: calc(var(--ifk-font-size-base) * 0.8125);
+  color: var(--ifk-color-text);
+}
+
+.ifk-slot-label {
+  font-size: calc(var(--ifk-font-size-base) * 0.8125);
+  color: var(--ifk-color-text);
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ifk-slot-empty {
+  font-size: calc(var(--ifk-font-size-base) * 0.875);
+  color: var(--ifk-color-text);
+  opacity: 0.4;
+  font-style: italic;
+}
+
+.ifk-slot-actions {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--ifk-spacing) * 0.375);
+  flex-shrink: 0;
+}
+
+.ifk-slot-confirm-text {
+  font-size: calc(var(--ifk-font-size-base) * 0.875);
+  color: var(--ifk-color-text);
+  opacity: 0.75;
+  white-space: nowrap;
+}
+
+/* ─── Modal responsive (mobile) ──────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .ifk-modal-dialog { max-width: 100%; }
+
+  .ifk-settings-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: calc(var(--ifk-spacing) * 0.5);
+  }
+
+  .ifk-settings-label { width: auto; }
+
+  .ifk-theme-group,
+  .ifk-range-wrap { width: 100%; }
+
+  .ifk-modal-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ifk-modal-footer-actions { justify-content: flex-end; }
+}
