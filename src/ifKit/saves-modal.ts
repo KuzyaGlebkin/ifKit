@@ -1,4 +1,6 @@
+import { mountSavesSlotLucideIcons } from './lucide-icons'
 import { restoreGameState, getCurrentSnapshot } from './scenes'
+import { getTabbableIn, lockModalFocus, type ModalFocusLock } from './modal-focus-lock'
 import {
   getSavesStore,
   saveToSlot,
@@ -7,10 +9,8 @@ import {
 } from './saves'
 import type { SaveSlot, SavesStore } from './saves'
 
-const FOCUSABLE_SELECTORS =
-  'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
-
 let _slotsCount = 5
+let _savesFocusLock: ModalFocusLock | null = null
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -38,75 +38,92 @@ function formatDate(iso: string): string {
 function renderAutoSlotCard(slot: SaveSlot | null): string {
   if (!slot) {
     return `
-      <div class="ifk-slot ifk-slot--auto" data-slot-id="auto">
+      <div class="ifk-slot ifk-slot--auto" data-slot-id="auto" role="group" aria-labelledby="ifk-slot-num-auto">
         <div class="ifk-slot-info">
-          <span class="ifk-slot-num">Авто</span>
+          <span class="ifk-slot-num" id="ifk-slot-num-auto">Авто</span>
           <span class="ifk-slot-empty">── нет данных ──</span>
         </div>
         <div class="ifk-slot-actions"></div>
       </div>`
   }
   return `
-    <div class="ifk-slot ifk-slot--auto" data-slot-id="auto">
+    <div class="ifk-slot ifk-slot--auto" data-slot-id="auto" role="group" aria-labelledby="ifk-slot-num-auto">
       <div class="ifk-slot-info">
-        <span class="ifk-slot-num">Авто</span>
+        <span class="ifk-slot-num" id="ifk-slot-num-auto">Авто</span>
         <span class="ifk-slot-meta">${escapeHtml(formatDate(slot.savedAt))}</span>
       </div>
       <div class="ifk-slot-actions">
-        <button class="ifk-btn-ghost ifk-slot-load-btn">Загрузить</button>
+        <button type="button" class="ifk-btn-ghost ifk-slot-load-btn">
+          <span class="ifk-btn-icon" aria-hidden="true"></span>
+          <span class="ifk-btn-label">Загрузить</span>
+        </button>
       </div>
     </div>`
 }
 
 function renderNamedSlotCard(slot: SaveSlot | null, index: number): string {
+  const numId = `ifk-slot-num-${index}`
   if (!slot) {
     return `
-      <div class="ifk-slot" data-slot-index="${index}">
+      <div class="ifk-slot" data-slot-index="${index}" role="group" aria-labelledby="${numId}">
         <div class="ifk-slot-info">
-          <span class="ifk-slot-num">${index + 1}</span>
+          <span class="ifk-slot-num" id="${numId}">${index + 1}</span>
           <span class="ifk-slot-empty">── пусто ──</span>
         </div>
         <div class="ifk-slot-actions">
-          <button class="ifk-btn-ghost ifk-slot-save-btn">Сохранить</button>
+          <button type="button" class="ifk-btn-ghost ifk-slot-save-btn">
+            <span class="ifk-btn-icon" aria-hidden="true"></span>
+            <span class="ifk-btn-label">Сохранить</span>
+          </button>
         </div>
       </div>`
   }
-  const label = slot.label ? `<span class="ifk-slot-label">«${escapeHtml(slot.label)}»</span>` : ''
+  const labelId = `ifk-slot-label-${index}`
+  const labelled = slot.label ? `${numId} ${labelId}` : numId
+  const label = slot.label
+    ? `<span class="ifk-slot-label" id="${labelId}">«${escapeHtml(slot.label)}»</span>`
+    : ''
   return `
-    <div class="ifk-slot" data-slot-index="${index}">
+    <div class="ifk-slot" data-slot-index="${index}" role="group" aria-labelledby="${labelled}">
       <div class="ifk-slot-info">
-        <span class="ifk-slot-num">${index + 1}</span>
+        <span class="ifk-slot-num" id="${numId}">${index + 1}</span>
         <span class="ifk-slot-meta">${escapeHtml(formatDate(slot.savedAt))}</span>
         ${label}
       </div>
       <div class="ifk-slot-actions">
-        <button class="ifk-btn-ghost ifk-slot-load-btn">Загрузить</button>
-        <button class="ifk-btn-ghost ifk-slot-save-btn">Сохранить</button>
-        <button class="ifk-btn-ghost ifk-slot-delete-btn">Удалить</button>
+        <button type="button" class="ifk-btn-ghost ifk-slot-load-btn">
+          <span class="ifk-btn-icon" aria-hidden="true"></span>
+          <span class="ifk-btn-label">Загрузить</span>
+        </button>
+        <button type="button" class="ifk-btn-ghost ifk-slot-save-btn">
+          <span class="ifk-btn-icon" aria-hidden="true"></span>
+          <span class="ifk-btn-label">Сохранить</span>
+        </button>
+        <button type="button" class="ifk-btn-ghost ifk-slot-delete-btn">
+          <span class="ifk-btn-icon" aria-hidden="true"></span>
+          <span class="ifk-btn-label">Удалить</span>
+        </button>
       </div>
     </div>`
 }
 
 // ─── Build DOM ────────────────────────────────────────────────────────────────
 
-function buildModal(slots: number): HTMLElement {
+function buildModal(_slots: number): HTMLElement {
   const backdrop = document.createElement('div')
   backdrop.id        = 'ifk-saves-backdrop'
   backdrop.className = 'ifk-modal-backdrop'
-  backdrop.setAttribute('aria-hidden', 'true')
+  backdrop.setAttribute('hidden', '')
 
   backdrop.innerHTML = `
     <div id="ifk-saves-dialog"
-         role="dialog"
-         aria-modal="true"
-         aria-labelledby="ifk-saves-title"
          class="ifk-modal-dialog ifk-saves-dialog">
 
       <div class="ifk-modal-header">
         <h2 id="ifk-saves-title" class="ifk-modal-title">Сохранения</h2>
         <button id="ifk-saves-close"
                 class="ifk-modal-close"
-                aria-label="Закрыть">✕</button>
+                type="button">✕</button>
       </div>
 
       <div id="ifk-saves-body" class="ifk-modal-body ifk-saves-body">
@@ -128,6 +145,7 @@ function syncToDOM(store: SavesStore): void {
     html += renderNamedSlotCard(store.slots[i], i)
   }
   body.innerHTML = html
+  mountSavesSlotLucideIcons(body)
 
   bindSlotEvents(body, store)
 }
@@ -218,41 +236,22 @@ function showOverwriteConfirm(card: HTMLElement, index: number): void {
 
 function open(): void {
   const backdrop = document.getElementById('ifk-saves-backdrop')
-  if (!backdrop || backdrop.getAttribute('aria-hidden') === 'false') return
+  if (!backdrop || !backdrop.hasAttribute('hidden')) return
 
   syncToDOM(loadSavesStore(_slotsCount))
 
-  backdrop.setAttribute('aria-hidden', 'false')
-  const first = backdrop.querySelector<HTMLElement>(FOCUSABLE_SELECTORS)
-  first?.focus()
+  backdrop.removeAttribute('hidden')
+  const trigger = document.getElementById('btn-saves') as HTMLElement | null
+  _savesFocusLock = lockModalFocus(backdrop, trigger)
+  queueMicrotask(() => getTabbableIn(backdrop)[0]?.focus())
 }
 
 function close(): void {
   const backdrop = document.getElementById('ifk-saves-backdrop')
   if (!backdrop) return
-  backdrop.setAttribute('aria-hidden', 'true')
-  document.getElementById('btn-saves')?.focus()
-}
-
-// ─── Focus trap ───────────────────────────────────────────────────────────────
-
-function trapFocus(e: KeyboardEvent): void {
-  const backdrop = document.getElementById('ifk-saves-backdrop')
-  if (!backdrop || backdrop.getAttribute('aria-hidden') !== 'false') return
-
-  const focusable = Array.from(
-    backdrop.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS),
-  )
-  if (!focusable.length) return
-
-  const first = focusable[0]
-  const last  = focusable[focusable.length - 1]
-
-  if (e.shiftKey) {
-    if (document.activeElement === first) { e.preventDefault(); last.focus() }
-  } else {
-    if (document.activeElement === last)  { e.preventDefault(); first.focus() }
-  }
+  _savesFocusLock?.release()
+  _savesFocusLock = null
+  backdrop.setAttribute('hidden', '')
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
@@ -272,10 +271,6 @@ export function initSavesModal(slots: number): void {
   })
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && backdrop.getAttribute('aria-hidden') === 'false') close()
-  })
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Tab') trapFocus(e)
+    if (e.key === 'Escape' && !backdrop.hasAttribute('hidden')) close()
   })
 }

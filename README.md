@@ -140,12 +140,26 @@ my-game/
 
 ## Команды
 
-| Команда          | Описание                         |
-| ---------------- | -------------------------------- |
-| `npm run dev`    | Запустить dev-сервер с HMR       |
-| `npm run build`  | Собрать игру в `dist/index.html` |
-| `npm run lint`   | Проверить код ESLint             |
-| `npm run format` | Форматировать код Prettier       |
+| Команда                    | Описание                                     |
+| -------------------------- | -------------------------------------------- |
+| `npm run dev`              | Запустить dev-сервер с HMR                   |
+| `npm run build`            | Web-сборка в `dist/index.html`               |
+| `npm run lint`             | Проверить код ESLint                         |
+| `npm run format`           | Форматировать код Prettier                   |
+| `npm run tauri:dev`        | Нативное окно поверх dev-сервера             |
+| `npm run tauri:build`      | Desktop-установщик (Windows / macOS / Linux) |
+| `npm run tauri:android`    | Android APK/AAB                              |
+
+---
+
+## Сборка и публикация
+
+Подробная инструкция по всем типам сборки, настройке окружения для Android и конфигурации Steam Auto-Cloud — в [`docs/building.md`](docs/building.md).
+
+**Кратко:**
+- **Web**: `npm run build` → `dist/index.html` — открывается без сервера, публикуется на itch.io / GitHub Pages
+- **Desktop**: `npm run tauri:build` → нативный установщик для Windows, macOS, Linux
+- **Android**: `npm run tauri:android` → APK (требует Android Studio и NDK)
 
 ---
 

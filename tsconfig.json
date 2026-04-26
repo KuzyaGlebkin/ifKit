@@ -14,7 +14,11 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@ifkit-storage": ["src/ifKit/storage/local.ts"]
+    }
   },
   "include": ["src/**/*.ts"]
 }

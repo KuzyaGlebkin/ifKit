@@ -1,6 +1,6 @@
 // Save slots and history — Этап 5
 
-import { storage, KEYS } from './storage'
+import { storage, KEYS } from '@ifkit-storage'
 import { jsonClone } from './state'
 
 // ─── Types ────────────────────────────────────────────────────────────────────

@@ -1,17 +1,10 @@
-export interface StorageAdapter {
-  get<T>(key: string): T | null
-  set<T>(key: string, value: T): void
-  remove(key: string): void
-}
+import type { StorageAdapter } from './interface'
+import { IFKIT_PREFIX } from './interface'
 
-export const KEYS = {
-  settings: 'ifkit:settings',
-  saves:    'ifkit:saves',
-} as const
+export { KEYS } from './interface'
+export type { StorageAdapter }
 
-const IFKIT_PREFIX = 'ifkit:'
-
-// ─── Adapters ─────────────────────────────────────────────────────────────────
+// ─── Adapter ──────────────────────────────────────────────────────────────────
 
 class LocalStorageAdapter implements StorageAdapter {
   get<T>(key: string): T | null {
@@ -32,38 +25,12 @@ class LocalStorageAdapter implements StorageAdapter {
   }
 }
 
-// TODO Этап 8: заменить на @tauri-apps/plugin-store
-class TauriAdapter implements StorageAdapter {
-  private local = new LocalStorageAdapter()
+// ─── Singleton ────────────────────────────────────────────────────────────────
 
-  get<T>(key: string): T | null {
-    return this.local.get<T>(key)
-  }
+export const storage: StorageAdapter = new LocalStorageAdapter()
 
-  set<T>(key: string, value: T): void {
-    this.local.set(key, value)
-  }
-
-  remove(key: string): void {
-    this.local.remove(key)
-  }
-}
-
-// ─── Singleton with lazy init ─────────────────────────────────────────────────
-
-let _adapter: StorageAdapter | null = null
-
-function getAdapter(): StorageAdapter {
-  if (!_adapter) {
-    _adapter = '__TAURI__' in window ? new TauriAdapter() : new LocalStorageAdapter()
-  }
-  return _adapter
-}
-
-export const storage: StorageAdapter = {
-  get<T>(key: string): T | null    { return getAdapter().get<T>(key) },
-  set<T>(key: string, value: T)    { getAdapter().set(key, value) },
-  remove(key: string)              { getAdapter().remove(key) },
+export async function initStorage(): Promise<void> {
+  // no-op for browser: localStorage is always ready
 }
 
 // ─── Export / Import ──────────────────────────────────────────────────────────

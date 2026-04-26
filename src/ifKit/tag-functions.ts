@@ -1,4 +1,5 @@
 import { appendHtml } from './renderer'
+import { setAudioIntent, playSound } from './audio'
 
 function buildTag(tag: string, content?: string, attrs?: Record<string, string>): string {
   const attrStr = attrs
@@ -42,3 +43,12 @@ export const A      = (content: string, attrs?: Record<string, string>) => appen
 export const Ul     = (...items: string[]) => appendHtml(ul(...items))
 export const Img    = (attrs: { src: string; alt?: string }) => appendHtml(img(attrs))
 export const Hr     = () => appendHtml(hr())
+
+// ── Scene slot ───────────────────────────────────────────────────────────────
+
+export const Slot = (id: string): void => appendHtml(`<div data-slot="${id}"></div>`)
+
+// ── Audio tag functions ───────────────────────────────────────────────────────
+
+export const PlayMusic = (src: string): void => setAudioIntent(src)
+export const Sound     = (src: string): void => playSound(src)
