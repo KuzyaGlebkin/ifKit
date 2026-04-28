@@ -26,6 +26,10 @@
   --ifk-spacing:          1rem;
 
   --ifk-max-width:        720px;
+
+  /* Скроллбар: track/thumb от текущей темы (см. правила `scrollbar-color` / `::-webkit-scrollbar`) */
+  --ifk-scrollbar-track: var(--ifk-color-surface);
+  --ifk-scrollbar-thumb: color-mix(in srgb, var(--ifk-color-text) 32%, var(--ifk-color-border));
 }
 
 /* ─── Dark theme (explicit attribute) ───────────────────────────────────── */
@@ -59,6 +63,31 @@
 }
 
 /* ─── Base ───────────────────────────────────────────────────────────────── */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ifk-scrollbar-thumb) var(--ifk-scrollbar-track);
+}
+
+html::-webkit-scrollbar,
+#ifk-settings-dialog .ifk-modal-body::-webkit-scrollbar,
+.ifk-saves-body::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+html::-webkit-scrollbar-track,
+#ifk-settings-dialog .ifk-modal-body::-webkit-scrollbar-track,
+.ifk-saves-body::-webkit-scrollbar-track {
+  background: var(--ifk-scrollbar-track);
+}
+
+html::-webkit-scrollbar-thumb,
+#ifk-settings-dialog .ifk-modal-body::-webkit-scrollbar-thumb,
+.ifk-saves-body::-webkit-scrollbar-thumb {
+  background: var(--ifk-scrollbar-thumb);
+  border-radius: var(--ifk-radius);
+}
+
 html,
 body {
   height: 100%;
@@ -80,10 +109,33 @@ body {
   background-color: var(--ifk-color-surface);
 }
 
+#controls .ifk-controls-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(var(--ifk-spacing) * 0.5);
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#controls .ifk-controls-actions > li:first-child {
+  margin-inline-end: auto;
+}
+
+#controls .ifk-controls-actions > li {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
 .ifk-brand-logo {
   display: inline-flex;
   align-items: center;
-  margin-right: calc(var(--ifk-spacing) * 0.25);
   color: var(--ifk-color-accent);
   flex-shrink: 0;
 }
@@ -97,6 +149,112 @@ body {
 
 .ifk-brand-logo-svg .ifk-brand-logo-if-fill {
   pointer-events: none;
+}
+
+#btn-brand.ifk-brand-btn {
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+#btn-brand.ifk-brand-btn:hover {
+  background: transparent;
+  opacity: 0.92;
+}
+
+#controls #btn-brand:focus-visible {
+  outline: 2px solid var(--ifk-color-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ─── Session main menu (full screen, no nav) ───────────────────────────── */
+.ifk-session-menu-root {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: calc(var(--ifk-spacing) * 2) var(--ifk-spacing);
+  overflow: auto;
+  background-color: var(--ifk-color-bg);
+  color: var(--ifk-color-text);
+}
+
+.ifk-session-menu-root[hidden] {
+  display: none !important;
+}
+
+html.ifk-session-menu-active #controls,
+html.ifk-session-menu-active #content {
+  display: none !important;
+}
+
+.ifk-session-menu-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--ifk-spacing) * 1.25);
+  width: 100%;
+  max-width: min(28rem, 100%);
+  text-align: center;
+}
+
+.ifk-session-menu-brand-wrap {
+  margin-bottom: calc(var(--ifk-spacing) * 0.25);
+}
+
+.ifk-session-menu-brand-logo {
+  color: var(--ifk-color-accent);
+}
+
+.ifk-session-menu-title {
+  font-size: calc(var(--ifk-font-size-base) * 1.35);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.ifk-session-menu-description {
+  font-size: calc(var(--ifk-font-size-base) * 0.95);
+  opacity: 0.92;
+  white-space: pre-wrap;
+}
+
+.ifk-session-menu-description:empty {
+  display: none;
+}
+
+.ifk-session-menu-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: calc(var(--ifk-spacing) * 0.6);
+  width: 100%;
+  margin-top: calc(var(--ifk-spacing) * 0.5);
+}
+
+.ifk-session-menu-actions .ifk-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: calc(var(--ifk-font-size-base) * 0.9375);
+  border: 1px solid var(--ifk-color-border);
+  border-radius: var(--ifk-radius);
+  background-color: var(--ifk-color-surface);
+  color: var(--ifk-color-text);
+  cursor: pointer;
+}
+
+.ifk-session-menu-actions .ifk-btn-ghost:hover {
+  background-color: var(--ifk-color-bg);
 }
 
 /* Programmatic focus target before #scene-content: tabindex=-1 → not in Tab order. */
@@ -263,12 +421,6 @@ svg.ifk-lucide {
   #content {
     padding: calc(var(--ifk-spacing) * 0.75);
   }
-
-  .btn-act,
-  .btn-goto {
-    width: 100%;
-    text-align: center;
-  }
 }
 
 /* ─── Settings modal backdrop ────────────────────────────────────────────── */
@@ -298,6 +450,31 @@ svg.ifk-lucide {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* Модалка настроек: не выше viewport; тело прокручивается, шапка/подвал фиксированы */
+#ifk-settings-dialog {
+  max-height: calc(100vh - 2 * var(--ifk-spacing));
+}
+
+@supports (height: 100dvh) {
+  #ifk-settings-dialog {
+    max-height: calc(100dvh - 2 * var(--ifk-spacing));
+  }
+}
+
+#ifk-settings-dialog .ifk-modal-header {
+  flex-shrink: 0;
+}
+
+#ifk-settings-dialog .ifk-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+#ifk-settings-dialog .ifk-modal-footer {
+  flex-shrink: 0;
 }
 
 /* ─── Modal header ───────────────────────────────────────────────────────── */
@@ -348,6 +525,11 @@ svg.ifk-lucide {
   display: flex;
   align-items: center;
   gap: var(--ifk-spacing);
+}
+
+.ifk-settings-row--volume .ifk-range-wrap {
+  flex: 1;
+  min-width: 0;
 }
 
 #ifk-settings-theme-font {
@@ -502,7 +684,7 @@ svg.ifk-lucide {
 
 /* ─── Saves modal specifics ──────────────────────────────────────────────── */
 .ifk-saves-dialog {
-  max-width: 560px;
+  max-width: 840px;
 }
 
 .ifk-saves-body {
@@ -541,6 +723,13 @@ svg.ifk-lucide {
   gap: 0.2rem;
 }
 
+/* Keyboard ArrowUp/Down between info lines and action buttons (tabindex -1 rows) */
+.ifk-slot-info > :focus-visible,
+.ifk-slot-actions > .ifk-slot-confirm-text:focus-visible {
+  outline: 2px solid var(--ifk-color-accent);
+  outline-offset: 2px;
+}
+
 .ifk-slot-num {
   font-size: calc(var(--ifk-font-size-base) * 0.75);
   font-weight: 600;
@@ -564,6 +753,15 @@ svg.ifk-lucide {
   text-overflow: ellipsis;
 }
 
+.ifk-slot-preview {
+  font-size: calc(var(--ifk-font-size-base) * 0.8125);
+  color: var(--ifk-color-text);
+  opacity: 0.65;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .ifk-slot-empty {
   font-size: calc(var(--ifk-font-size-base) * 0.875);
   color: var(--ifk-color-text);
@@ -573,21 +771,37 @@ svg.ifk-lucide {
 
 .ifk-slot-actions {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: calc(var(--ifk-spacing) * 0.375);
   flex-shrink: 0;
+}
+
+.ifk-slot-actions > .ifk-btn-ghost {
+  width: 100%;
+  justify-content: center;
 }
 
 .ifk-slot-confirm-text {
   font-size: calc(var(--ifk-font-size-base) * 0.875);
   color: var(--ifk-color-text);
   opacity: 0.75;
-  white-space: nowrap;
+  white-space: normal;
+  max-width: 12rem;
+  text-align: center;
+}
+
+.ifk-slot-actions > .ifk-confirm-yes,
+.ifk-slot-actions > .ifk-confirm-no {
+  width: 100%;
 }
 
 /* ─── Unseen content highlight ───────────────────────────────────────────── */
 .paragraph--unseen {
-  background-color: var(--ifk-unseen-color, rgba(255, 220, 80, 0.18));
+  background-color: var(
+    --ifk-unseen-color,
+    color-mix(in srgb, var(--ifk-color-accent) 18%, transparent)
+  );
   border-radius: 3px;
 }
 
@@ -597,12 +811,44 @@ svg.ifk-lucide {
   gap: var(--ifk-spacing);
 }
 
+/* Нативный чекбокс в тёмной теме даёт светлую заливку; рисуем сами — токены bg/text и акцент для :checked */
 .ifk-checkbox {
+  -webkit-appearance: none;
+  appearance: none;
   width: 1.1rem;
   height: 1.1rem;
-  cursor: pointer;
-  accent-color: var(--ifk-color-accent, #4a90d9);
+  margin: 0;
   flex-shrink: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--ifk-color-text);
+  border-radius: 3px;
+  background-color: var(--ifk-color-bg);
+  cursor: pointer;
+  vertical-align: middle;
+  position: relative;
+}
+
+.ifk-checkbox:checked {
+  background-color: var(--ifk-color-accent);
+  border-color: var(--ifk-color-accent);
+}
+
+.ifk-checkbox:checked::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  box-sizing: border-box;
+  width: 0.2rem;
+  height: 0.42rem;
+  border: solid var(--ifk-color-accent-fg);
+  border-width: 0 2px 2px 0;
+  transform: translate(-50%, -65%) rotate(45deg);
+}
+
+.ifk-checkbox:focus-visible {
+  outline: 2px solid var(--ifk-color-accent);
+  outline-offset: 2px;
 }
 
 .ifk-btn-sm {
@@ -610,8 +856,58 @@ svg.ifk-lucide {
   padding: calc(var(--ifk-spacing) * 0.35) calc(var(--ifk-spacing) * 0.75);
 }
 
+/* ─── Snackbar (state change toasts) ───────────────────────────────────────── */
+#snackbar-container {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: calc(var(--ifk-spacing) * 0.5);
+  padding-inline: var(--ifk-spacing);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), var(--ifk-spacing));
+  pointer-events: none;
+}
+
+.snackbar-item {
+  pointer-events: auto;
+  width: 100%;
+  max-width: min(100%, var(--ifk-max-width));
+  padding: calc(var(--ifk-spacing) * 0.5) calc(var(--ifk-spacing) * 0.75);
+  font-size: calc(var(--ifk-font-size-base) * 0.9375);
+  line-height: 1.4;
+  text-align: center;
+  color: var(--ifk-color-text);
+  background-color: var(--ifk-color-surface);
+  border: 1px solid var(--ifk-color-border);
+  border-radius: var(--ifk-radius);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  overflow-wrap: break-word;
+}
+
+[data-theme="dark"] .snackbar-item {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .snackbar-item {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+  }
+}
+
 /* ─── Toolbar & saves: icon-only (compact width) ─────────────────────────── */
 @media (max-width: 600px) {
+  /* Scene act/goto: full width per row (aligned with compact toolbar breakpoint) */
+  .btn-act,
+  .btn-goto {
+    width: 100%;
+    text-align: center;
+  }
+
   /* Keep .ifk-btn-label in DOM for screen readers; hide visually */
   #controls .ifk-btn-label,
   .ifk-saves-dialog .ifk-btn-label {

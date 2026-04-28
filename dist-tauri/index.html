@@ -1,12 +1,13 @@
 <!doctype html>
-<html lang="ru">
+<!-- document.documentElement.lang is set by the engine from game language / settings. -->
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ifKit Game</title>
-    <link rel="icon" type="image/svg+xml" href="./assets/ifk-favicon-DXLuk34O.svg" />
-    <script type="module" crossorigin src="./assets/index-DkCKZUVq.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-BBM7p35a.css">
+    <link rel="icon" type="image/svg+xml" href="./assets/ifk-favicon-Bsyf5ll2.svg" />
+    <script type="module" crossorigin src="./assets/index-DrBo0lVo.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CMU9W72q.css">
   </head>
   <body>
     <nav id="controls">
@@ -30,22 +31,32 @@
           />
         </svg>
       </span>
-      <button id="btn-undo" type="button">
-        <span class="ifk-btn-icon" aria-hidden="true"></span>
-        <span class="ifk-btn-label">Назад</span>
-      </button>
-      <button id="btn-redo" type="button">
-        <span class="ifk-btn-icon" aria-hidden="true"></span>
-        <span class="ifk-btn-label">Вперёд</span>
-      </button>
-      <button id="btn-saves" type="button">
-        <span class="ifk-btn-icon" aria-hidden="true"></span>
-        <span class="ifk-btn-label">Сохранения</span>
-      </button>
-      <button id="btn-settings" type="button">
-        <span class="ifk-btn-icon" aria-hidden="true"></span>
-        <span class="ifk-btn-label">Настройки</span>
-      </button>
+      <ul class="ifk-controls-actions">
+        <li>
+          <button id="btn-undo" type="button">
+            <span class="ifk-btn-icon" aria-hidden="true"></span>
+            <span class="ifk-btn-label">Назад</span>
+          </button>
+        </li>
+        <li>
+          <button id="btn-redo" type="button">
+            <span class="ifk-btn-icon" aria-hidden="true"></span>
+            <span class="ifk-btn-label">Вперёд</span>
+          </button>
+        </li>
+        <li>
+          <button id="btn-saves" type="button">
+            <span class="ifk-btn-icon" aria-hidden="true"></span>
+            <span class="ifk-btn-label">Сохранения</span>
+          </button>
+        </li>
+        <li>
+          <button id="btn-settings" type="button">
+            <span class="ifk-btn-icon" aria-hidden="true"></span>
+            <span class="ifk-btn-label">Настройки</span>
+          </button>
+        </li>
+      </ul>
     </nav>
 
     <div id="content">

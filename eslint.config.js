@@ -16,12 +16,16 @@ export default [
     },
     rules: {
       ...tseslint.configs.recommended.rules,
+      '@typescript-eslint/no-unused-expressions': [
+        'error',
+        { allowShortCircuit: true, allowTernary: true, allowTaggedTemplates: true },
+      ],
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
   {
-    ignores: ['dist/', 'node_modules/'],
+    ignores: ['dist/', 'dist-tauri/', 'node_modules/', 'src-tauri/target/'],
   },
 ]

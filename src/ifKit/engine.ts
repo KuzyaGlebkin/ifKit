@@ -1,4 +1,4 @@
-import { registerScenes, initDOMRefs, runGameLoop } from './scenes'
+import { registerScenes, initDOMRefs } from './scenes'
 import type { SceneFn, Scenes, SceneContext, StaticContext } from './scenes'
 import { initSnackbar } from './snackbar'
 import type { WatchConfig } from './snackbar'
@@ -9,17 +9,33 @@ import { initHistory, loadSavesStore } from './saves'
 import type { SavesConfig } from './saves'
 import { initSavesModal } from './saves-modal'
 import { initAudioVolumes } from './audio'
-import { initI18n } from './i18n'
-import type { Locales } from './i18n'
+import {
+  initI18n,
+  normalizeLocalesInput,
+  mergeAuthorLocalesWithTemplate,
+  setLocaleChangeHandler,
+  type LocalesInput,
+} from './i18n'
+import { LOCALE_TEMPLATE_GAME, LOCALE_TEMPLATE_UI } from './locale-templates'
 import { initSeenContent } from './seen-content'
 import { setShowUnseenHighlight } from './scenes'
 import { initStorage } from '@ifkit-storage'
 import { initToolbarLucideIcons } from './lucide-icons'
+import { refreshToolbarI18n } from './chrome-i18n'
+import { refreshSettingsModalI18n } from './settings-modal'
+import { refreshSavesModalChrome } from './saves-modal'
+import { initSessionMainMenu, refreshSessionMainMenuChrome } from './session-main-menu'
 
 export type { SceneFn, Scenes, SceneContext, StaticContext, WatchConfig }
 export type { Settings, AccentPreset }
 export type { SavesConfig }
-export type { Locales }
+export type { Locales, LocalesInput, LocaleBundle } from './i18n'
+
+/** Optional title and tagline shown on the session start menu. */
+export interface GameMeta {
+  title:        string
+  description?: string
+}
 
 export interface GameConfig<S, K extends string> {
   /**
@@ -56,7 +72,11 @@ export interface GameConfig<S, K extends string> {
    * translated string. Use the `t` tagged template literal in scenes to look
    * up translations. If omitted, `t` returns the original string unchanged.
    */
-  locales?: Locales
+  /**
+   * Per-language game strings (`t`) and optional `ui` for engine chrome, or
+   * legacy flat map of game strings only.
+   */
+  locales?: LocalesInput
   /**
    * BCP 47 short code of the language the scene strings are written in
    * (e.g. `'ru'`, `'en'`). When provided, the engine adds this language as
@@ -64,6 +84,8 @@ export interface GameConfig<S, K extends string> {
    * `navigator.language` works correctly for that language.
    */
   sourceLanguage?: string
+  /** Title and optional tagline on the session start menu. */
+  meta?: GameMeta
 }
 
 function getOrCreate(parent: HTMLElement, id: string): HTMLElement {
@@ -103,13 +125,34 @@ export function defineGame<S extends object, K extends string>(
 
     const authorDefaults = mergeDefaults(config.settings)
     const currentSettings = loadSettings(authorDefaults)
+    setLocaleChangeHandler(() => {
+      refreshToolbarI18n()
+      refreshSettingsModalI18n()
+      refreshSavesModalChrome()
+      refreshSessionMainMenuChrome()
+    })
+    const fullRaw: LocalesInput = config.sourceLanguage
+      ? { [config.sourceLanguage]: {}, ...((config.locales ?? {}) as LocalesInput) }
+      : ((config.locales ?? {}) as LocalesInput)
+    const mergedRaw = mergeAuthorLocalesWithTemplate(
+      fullRaw,
+      LOCALE_TEMPLATE_GAME,
+      LOCALE_TEMPLATE_UI,
+    )
+    const { game: gameLocales, ui: uiByLang } = normalizeLocalesInput(
+      mergedRaw,
+      config.sourceLanguage,
+    )
+    const languages = Object.keys(gameLocales)
+    initI18n(gameLocales, uiByLang, currentSettings.language, config.sourceLanguage)
     applySettings(currentSettings)
-    initAudioVolumes(currentSettings.musicVolume, currentSettings.soundVolume)
-    const fullLocales = config.sourceLanguage
-      ? { [config.sourceLanguage]: {}, ...config.locales }
-      : config.locales ?? {}
-    const languages = Object.keys(fullLocales)
-    initI18n(fullLocales, currentSettings.language)
+    initAudioVolumes(
+      currentSettings.musicVolume,
+      currentSettings.soundVolume,
+      currentSettings.musicMuted,
+      currentSettings.soundMuted,
+      currentSettings.quietMusicForScreenReader,
+    )
     initSeenContent()
     setShowUnseenHighlight(currentSettings.showUnseenHighlight)
 
@@ -126,7 +169,15 @@ export function defineGame<S extends object, K extends string>(
     initDOMRefs(sceneEl, actsEl, gotosEl, config.static)
 
     const firstKey = Object.keys(config.scenes)[0] as K
-    runGameLoop(firstKey)
+    const docTitle = typeof document !== 'undefined' ? document.title.trim() : ''
+    const meta     = config.meta
+    initSessionMainMenu({
+      title:        (meta?.title?.trim()) || docTitle || 'ifKit',
+      description:  meta?.description?.trim() ?? '',
+      firstKey:     String(firstKey),
+      initialState: config.state,
+      historySize,
+    })
   }
 
   if (document.readyState === 'loading') {

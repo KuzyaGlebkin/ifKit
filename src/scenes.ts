@@ -1,47 +1,46 @@
-import { H1, P, em, strong, t /*, PlayMusic, Sound */ } from './ifKit'
+import adventureMusic from './assets/Adventure.m4a'
+import coinPickupSound from './assets/impactGeneric_light_001.ogg'
+import branchPickupSound from './assets/impactWood_heavy_001.ogg'
+import { H1, P, Phtml, em, strong, t, PlayMusic, Sound } from './ifKit'
 import type { GameState } from './state'
 import type { SceneContext } from './ifKit'
 
 // ── Аудио-пример ─────────────────────────────────────────────────────────────
-// Чтобы использовать фоновую музыку, импортируй аудиофайл через Vite и вызови
-// PlayMusic() в теле сцены. В dev-режиме Vite отдаёт URL файла, при сборке
-// single-file HTML — инлайнит его как base64 data URL.
-//
-//   import forestMusic from './music/forest.mp3'
-//
-//   start: (state, { act, goto }) => {
-//     PlayMusic(forestMusic)   // декларативно: движок сам решит, менять ли трек
-//     H1('Лес')
-//     ...
-//   }
-//
-// Для одиночных звуков используй Sound() внутри колбэка act/goto:
-//
-//   act('Открыть дверь', s => {
-//     Sound(doorSound)
-//     s.doorOpen = true
-//   })
+// Фон: PlayMusic() в теле сцены (тот же src в каждой сцене с музыкой — трек
+// не перезапускается при переходе). Эффекты: Sound() в колбэке act.
+// В dev Vite отдаёт URL; в single-file build — data URL.
 // ─────────────────────────────────────────────────────────────────────────────
 
 type K = 'start' | 'clearing'
 
 export const scenes = {
   start: (state: GameState, { act, goto }: SceneContext<GameState, K>) => {
-    H1(t`Лес`)
-    P(t`Ты стоишь на опушке. Вокруг ${em(t`мёртвая`)} тишина.`)
+    PlayMusic(adventureMusic)
+    H1`Лес`
+    P`Ты стоишь на опушке. Вокруг ${em`мёртвая`} тишина.`
 
     if (!state.hasBranch) {
-      act(t`Поднять ветку`, s => { s.hasBranch = true })
+      act`Поднять ветку`(s => {
+        Sound(branchPickupSound)
+        s.hasBranch = true
+      })
     }
+    // Пример для snackbar: смена `gold` даёт уведомление с форматтером `watch.gold`.
+    act`Подобрать монету`(s => {
+      Sound(coinPickupSound)
+      s.gold += 1
+    })
 
-    goto('clearing', t`Пойти на поляну`)
+    goto('clearing')`Пойти на поляну`
   },
 
   clearing: (state: GameState, { goto }: SceneContext<GameState, K>) => {
-    H1(t`Поляна`)
-    const branchNote = state.hasBranch ? ` ${t`В руке у тебя ${strong(t`ветка`)}.`}` : ''
-    P(t`На поляне тихо.` + branchNote)
+    PlayMusic(adventureMusic)
+    H1`Поляна`
+    const branchNote = state.hasBranch ? t`В руке у тебя ${strong`ветка`}.` : ''
+    Phtml(t`На поляне тихо.` + (branchNote ? ' ' + branchNote : ''))
+    P`На поляне тихо без phtml ${branchNote}`
 
-    goto('start', t`Вернуться в лес`)
+    goto('start')`Вернуться в лес`
   },
 }

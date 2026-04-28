@@ -20,5 +20,5 @@
       "@ifkit-storage": ["src/ifKit/storage/local.ts"]
     }
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "src/**/*.d.ts"]
 }

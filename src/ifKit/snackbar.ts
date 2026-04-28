@@ -31,13 +31,24 @@ let _container: HTMLElement | null = null
 // Initialisation
 // ---------------------------------------------------------------------------
 
+function ensureSnackbarLiveRegion(el: HTMLElement): void {
+  el.setAttribute('role', 'status')
+  el.setAttribute('aria-live', 'polite')
+}
+
 /** Called once from `defineGame` to register the watch config and create the DOM container. */
 export function initSnackbar<S extends object>(watch: WatchConfig<S>): void {
   _watch = watch as WatchConfig<Record<string, unknown>>
 
-  if (document.getElementById('snackbar-container')) return
+  const existing = document.getElementById('snackbar-container')
+  if (existing) {
+    _container = existing
+    ensureSnackbarLiveRegion(_container)
+    return
+  }
   _container = document.createElement('div')
   _container.id = 'snackbar-container'
+  ensureSnackbarLiveRegion(_container)
   document.body.appendChild(_container)
 }
 

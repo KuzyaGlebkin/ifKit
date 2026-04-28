@@ -78,7 +78,7 @@ npm run dev
 npm run build
 ```
 
-Файл `dist/index.html` — готовая игра. Отправьте его другу, разместите на хостинге или запустите в Tauri.
+Файл `dist/<name>_<version>.html` (например `ifkit_0.1.0.html` для текущего `package.json`) — готовая игра. Отправьте его другу, разместите на хостинге или запустите в Tauri.
 
 ---
 
@@ -143,7 +143,7 @@ my-game/
 | Команда                    | Описание                                     |
 | -------------------------- | -------------------------------------------- |
 | `npm run dev`              | Запустить dev-сервер с HMR                   |
-| `npm run build`            | Web-сборка в `dist/index.html`               |
+| `npm run build`            | Web-сборка: один `<name>_<version>.html` в `dist/` |
 | `npm run lint`             | Проверить код ESLint                         |
 | `npm run format`           | Форматировать код Prettier                   |
 | `npm run tauri:dev`        | Нативное окно поверх dev-сервера             |
@@ -157,7 +157,7 @@ my-game/
 Подробная инструкция по всем типам сборки, настройке окружения для Android и конфигурации Steam Auto-Cloud — в [`docs/building.md`](docs/building.md).
 
 **Кратко:**
-- **Web**: `npm run build` → `dist/index.html` — открывается без сервера, публикуется на itch.io / GitHub Pages
+- **Web**: `npm run build` → `dist/<name>_<version>.html` — открывается без сервера, публикуется на itch.io / GitHub Pages
 - **Desktop**: `npm run tauri:build` → нативный установщик для Windows, macOS, Linux
 - **Android**: `npm run tauri:android` → APK (требует Android Studio и NDK)
 

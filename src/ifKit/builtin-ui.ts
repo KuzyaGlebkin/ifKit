@@ -1,0 +1,53 @@
+import { UI, type UiKey } from './ui-keys'
+
+/** Built-in UI strings for the game’s `sourceLanguage` until authors add `ui` to locales. */
+export const BUILTIN_UI: Record<string, Partial<Record<UiKey, string>>> = {
+  ru: {
+    [UI.langAuto]:          'Авто',
+    [UI.settingsLangLabel]: 'Язык',
+    [UI.settingsTitle]:     'Настройки',
+    [UI.settingsClose]:     'Закрыть настройки',
+    [UI.settingsTheme]:     'Тема',
+    [UI.settingsThemeLight]:   'Светлая',
+    [UI.settingsThemeDark]:      'Тёмная',
+    [UI.settingsThemeSystem]:    'Системная',
+    [UI.settingsFont]:      'Шрифт',
+    [UI.settingsAccent]:    'Акцент',
+    [UI.settingsAccentDefault]:  'Стандарт',
+    [UI.settingsAccentBlue]:     'Синий',
+    [UI.settingsAccentOrange]:   'Оранжевый',
+    [UI.settingsAccentEmerald]:  'Зелёный',
+    [UI.settingsMusic]:       'Музыка',
+    [UI.settingsMusicEnabled]: 'Включить музыку',
+    [UI.settingsQuietMusicSr]: 'Тихая музыка',
+    [UI.settingsSound]:       'Звуки',
+    [UI.settingsSoundEnabled]: 'Включить звуки',
+    [UI.settingsVolumeLevel]: '{0} %',
+    [UI.settingsUnseenLabel]: 'Новый текст',
+    [UI.settingsResetSeen]:   'Сбросить историю',
+    [UI.settingsResetAll]:    'Сбросить настройки',
+    [UI.settingsExport]:      'Экспорт',
+    [UI.settingsImport]:      'Импорт',
+
+    [UI.savesTitle]:            'Сохранения',
+    [UI.savesAuto]:             'Авто',
+    [UI.savesNoData]:           '── нет данных ──',
+    [UI.savesEmpty]:            '── пусто ──',
+    [UI.savesLoad]:             'Загрузить',
+    [UI.savesSave]:             'Сохранить',
+    [UI.savesDelete]:           'Удалить',
+    [UI.savesConfirmDelete]:    'Удалить?',
+    [UI.savesConfirmOverwrite]: 'Перезаписать?',
+    [UI.savesYes]:              'Да',
+    [UI.savesNo]:               'Нет',
+
+    [UI.toolbarUndo]:    'Назад',
+    [UI.toolbarRedo]:    'Вперёд',
+    [UI.toolbarSaves]:   'Сохранения',
+    [UI.toolbarSettings]: 'Настройки',
+
+    [UI.sessionMenuBrand]:     'Главное меню игры',
+    [UI.sessionNewGame]:       'Новая игра',
+    [UI.sessionLoadGame]:      'Загрузить',
+  },
+}

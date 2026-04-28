@@ -2,12 +2,31 @@
 
 const CROSSFADE_MS = 1000
 
+export const SCREEN_READER_MUSIC_ATTENUATION = 0.25
+
 let _ctx: AudioContext | null = null
 let _masterMusicGain: GainNode | null = null
 let _masterSoundGain: GainNode | null = null
 
-let _initMusicVolume = 0.8
-let _initSoundVolume = 1.0
+let _nominalMusic = 0.8
+let _nominalSound = 1.0
+let _musicMuted = false
+let _soundMuted = false
+let _quietMusicForScreenReader = false
+
+function effectiveMusicGain(): number {
+  const base = _nominalMusic * (_musicMuted ? 0 : 1)
+  return base * (_quietMusicForScreenReader ? SCREEN_READER_MUSIC_ATTENUATION : 1)
+}
+
+function effectiveSoundGain(): number {
+  return _nominalSound * (_soundMuted ? 0 : 1)
+}
+
+function applyMasterGains(): void {
+  if (_masterMusicGain) _masterMusicGain.gain.value = effectiveMusicGain()
+  if (_masterSoundGain) _masterSoundGain.gain.value = effectiveSoundGain()
+}
 
 const _bufferCache = new Map<string, AudioBuffer>()
 
@@ -24,11 +43,11 @@ function getContext(): AudioContext {
   _ctx = new AudioContext()
 
   _masterMusicGain = _ctx.createGain()
-  _masterMusicGain.gain.value = _initMusicVolume
+  _masterMusicGain.gain.value = effectiveMusicGain()
   _masterMusicGain.connect(_ctx.destination)
 
   _masterSoundGain = _ctx.createGain()
-  _masterSoundGain.gain.value = _initSoundVolume
+  _masterSoundGain.gain.value = effectiveSoundGain()
   _masterSoundGain.connect(_ctx.destination)
 
   const resume = () => { _ctx?.resume() }
@@ -60,6 +79,12 @@ export function clearAudioIntent(): void {
 
 export function setAudioIntent(src: string): void {
   _pendingMusic = src
+}
+
+/** Stops background music playback without touching user mute/volume prefs (intent cleared + fade). */
+export async function stopMusicPlaybackForMenu(): Promise<void> {
+  clearAudioIntent()
+  await resolveAudioIntent()
 }
 
 export async function resolveAudioIntent(): Promise<void> {
@@ -140,16 +165,41 @@ export function playSound(src: string): void {
 // ── Tasks 1.8 & 1.9: volume control + init ───────────────────────────────────
 
 export function setMusicVolume(v: number): void {
-  if (!_masterMusicGain) return
-  _masterMusicGain.gain.value = v
+  _nominalMusic = v
+  applyMasterGains()
 }
 
 export function setSoundVolume(v: number): void {
-  if (!_masterSoundGain) return
-  _masterSoundGain.gain.value = v
+  _nominalSound = v
+  applyMasterGains()
 }
 
-export function initAudioVolumes(musicVolume: number, soundVolume: number): void {
-  _initMusicVolume = musicVolume
-  _initSoundVolume = soundVolume
+export function setMusicMuted(muted: boolean): void {
+  _musicMuted = muted
+  applyMasterGains()
+}
+
+export function setQuietMusicForScreenReader(on: boolean): void {
+  _quietMusicForScreenReader = on
+  applyMasterGains()
+}
+
+export function setSoundMuted(muted: boolean): void {
+  _soundMuted = muted
+  applyMasterGains()
+}
+
+export function initAudioVolumes(
+  musicVolume: number,
+  soundVolume: number,
+  musicMuted = false,
+  soundMuted = false,
+  quietMusicForScreenReader = false,
+): void {
+  _nominalMusic = musicVolume
+  _nominalSound = soundVolume
+  _musicMuted = musicMuted
+  _soundMuted = soundMuted
+  _quietMusicForScreenReader = quietMusicForScreenReader
+  applyMasterGains()
 }

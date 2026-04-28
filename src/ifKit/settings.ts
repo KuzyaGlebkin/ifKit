@@ -1,10 +1,11 @@
 import { storage, KEYS } from '@ifkit-storage'
+import { syncRootLangFromI18n } from './i18n'
 
-export type AccentPreset = 'default' | 'blue' | 'violet' | 'emerald'
+export type AccentPreset = 'default' | 'blue' | 'orange' | 'emerald'
 
 const ACCENT_PRESETS: Record<Exclude<AccentPreset, 'default'>, { accent: string; fg: string }> = {
   blue:    { accent: '#2563eb', fg: '#ffffff' },
-  violet:  { accent: '#7c3aed', fg: '#ffffff' },
+  orange:  { accent: '#d97832', fg: '#ffffff' },
   emerald: { accent: '#059669', fg: '#ffffff' },
 }
 
@@ -13,6 +14,9 @@ export interface Settings {
   fontSize:             number   // multiplier 0.8–1.4
   musicVolume:          number   // 0–1
   soundVolume:          number   // 0–1
+  musicMuted:           boolean
+  soundMuted:           boolean
+  quietMusicForScreenReader: boolean
   language:             string   // lang code or '' for auto-detect
   showUnseenHighlight:  boolean  // highlight content the player hasn't seen yet
   accent:               AccentPreset
@@ -23,25 +27,42 @@ export const engineDefaults: Settings = {
   fontSize:            1.0,
   musicVolume:         0.8,
   soundVolume:         1.0,
+  musicMuted:          false,
+  soundMuted:          false,
+  quietMusicForScreenReader: false,
   language:            '',
   showUnseenHighlight: true,
   accent:                'default',
 }
 
+function isAccentToken(x: string): x is AccentPreset {
+  return x === 'default' || x === 'blue' || x === 'orange' || x === 'emerald'
+}
+
+/** `violet` was renamed to `orange`; old saves and configs may still use `violet`. */
+function normalizeAccent(value: unknown, fallback: AccentPreset): AccentPreset {
+  if (value === 'violet') return 'orange'
+  if (typeof value === 'string' && isAccentToken(value)) return value
+  return fallback
+}
+
 export function mergeDefaults(partial?: Partial<Settings>): Settings {
-  return { ...engineDefaults, ...partial }
+  const m: Settings = { ...engineDefaults, ...partial }
+  m.accent = normalizeAccent(m.accent, engineDefaults.accent)
+  return m
 }
 
 export function loadSettings(authorDefaults: Settings): Settings {
   const stored = storage.get<Partial<Settings>>(KEYS.settings)
   if (!stored || typeof stored !== 'object') return { ...authorDefaults }
   const merged: Settings = { ...authorDefaults, ...stored }
-  if (!isAccentPreset(merged.accent)) merged.accent = authorDefaults.accent
+  merged.accent = normalizeAccent(merged.accent, authorDefaults.accent)
+  if (typeof merged.musicMuted !== 'boolean') merged.musicMuted = authorDefaults.musicMuted
+  if (typeof merged.soundMuted !== 'boolean') merged.soundMuted = authorDefaults.soundMuted
+  if (typeof merged.quietMusicForScreenReader !== 'boolean') {
+    merged.quietMusicForScreenReader = authorDefaults.quietMusicForScreenReader
+  }
   return merged
-}
-
-function isAccentPreset(x: string | undefined): x is AccentPreset {
-  return x === 'default' || x === 'blue' || x === 'violet' || x === 'emerald'
 }
 
 export function saveSettings(settings: Settings): void {
@@ -65,6 +86,7 @@ export function applySettings(settings: Settings): void {
     html.style.setProperty('--ifk-color-accent', p.accent)
     html.style.setProperty('--ifk-color-accent-fg', p.fg)
   }
+  syncRootLangFromI18n()
 }
 
 export function resetSettings(authorDefaults: Settings): void {

@@ -11,6 +11,7 @@ import {
 import {
   getSceneLocal,
   clearSceneLocal,
+  clearAllSceneLocals,
   jsonClone,
   getSceneLocalSnapshot,
   restoreSceneLocal,
@@ -23,14 +24,16 @@ import {
   canUndo,
   canRedo,
   autoSave,
+  initHistory,
 } from './saves'
 import type { Snapshot } from './saves'
 import { clearAudioIntent, resolveAudioIntent } from './audio'
 import { markAndHighlight } from './seen-content'
+import { t } from './i18n'
 
 export type SceneContext<S, K extends string> = {
-  act: (label: string, cb: (s: S) => void) => void
-  goto: (key: K, label: string, cb?: (s: S) => void) => void
+  act: (strings: TemplateStringsArray, ...values: unknown[]) => (cb: (s: S) => void) => void
+  goto: (key: K) => (strings: TemplateStringsArray, ...values: unknown[]) => void
   local: <T extends object>(defaults: T) => T
 }
 
@@ -51,6 +54,12 @@ let _showUnseenHighlight = true
 
 export function setShowUnseenHighlight(enabled: boolean): void {
   _showUnseenHighlight = enabled
+}
+
+let _exitSessionMenu: () => void = () => {}
+
+export function setSessionMenuExit(fn: () => void): void {
+  _exitSessionMenu = fn
 }
 
 let _sceneEl: HTMLElement | null = null
@@ -100,8 +109,17 @@ export function getCurrentSnapshot(): Snapshot {
   }
 }
 
+/** Reset to author's initial state, clear locals and history (session menu «Новая игра»). */
+export function resetGameToInitial(initialState: unknown, historySize: number): void {
+  currentState       = jsonClone(initialState)
+  currentSceneKey    = ''
+  clearAllSceneLocals()
+  initHistory(historySize)
+}
+
 /** Restores game state from a snapshot and re-renders the scene. */
 export function restoreGameState(snapshot: Snapshot): void {
+  _exitSessionMenu()
   currentState = jsonClone(snapshot.state)
   if (snapshot.sceneLocals) {
     for (const [key, locals] of Object.entries(snapshot.sceneLocals)) {
@@ -113,26 +131,31 @@ export function restoreGameState(snapshot: Snapshot): void {
 
 function createContext<S extends object, K extends string>(state: S): SceneContext<S, K> {
   return {
-    act(label, cb) {
-      addAct(label, () => {
-        historyPush(getCurrentSnapshot())
-        const before = snapshotWatched(state)
-        cb(state)
-        const msgs = diffAndNotify(state, before)
-        rerender()
-        showSnackbar(msgs)
-      })
+    act(strings, ...values) {
+      const label = t(strings, ...values)
+      return cb => {
+        addAct(label, () => {
+          historyPush(getCurrentSnapshot())
+          const before = snapshotWatched(state)
+          cb(state)
+          const msgs = diffAndNotify(state, before)
+          rerender()
+          showSnackbar(msgs)
+        })
+      }
     },
-    goto(key, label, cb) {
-      addGoto(label, () => {
-        historyPush(getCurrentSnapshot())
-        const before = snapshotWatched(state)
-        if (cb) cb(state)
-        const msgs = diffAndNotify(state, before)
-        autoSave(String(key), currentState)
-        runGameLoop(String(key))
-        showSnackbar(msgs)
-      })
+    goto(key) {
+      return (strings, ...values) => {
+        const label = t(strings, ...values)
+        addGoto(label, () => {
+          historyPush(getCurrentSnapshot())
+          const before = snapshotWatched(state)
+          const msgs = diffAndNotify(state, before)
+          autoSave(String(key), currentState)
+          runGameLoop(String(key))
+          showSnackbar(msgs)
+        })
+      }
     },
     local<T extends object>(defaults: T): T {
       return getSceneLocal(currentSceneKey, defaults)
@@ -163,7 +186,16 @@ function createStaticContext<S extends object, K extends string>(state: S): Stat
 }
 
 export function rerender(): void {
-  runGameLoop(currentSceneKey)
+  void runGameLoop(currentSceneKey)
+}
+
+/**
+ * Re-run the current scene so game text and seen marks match settings / locale.
+ * While the session main menu is visible (`ifk-session-menu-active`), background
+ * music SHALL NOT start (see {@link runGameLoop}).
+ */
+export function rerenderForSettingsOrI18n(): void {
+  rerender()
 }
 
 function updateUndoRedoButtons(): void {
@@ -219,6 +251,11 @@ export async function runGameLoop(sceneKey: string): Promise<void> {
   flushActsToDOM(_actsEl)
   flushGotosToDOM(_gotosEl)
   updateUndoRedoButtons()
+  // Session menu cleared music via stopMusicPlaybackForMenu; re-running the scene
+  // for locale/seen would otherwise set PlayMusic intent again.
+  if (document.documentElement.classList.contains('ifk-session-menu-active')) {
+    clearAudioIntent()
+  }
   await resolveAudioIntent()
 
   if (prevSceneKey !== sceneKey) {

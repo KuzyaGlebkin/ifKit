@@ -53,3 +53,10 @@ export function restoreSceneLocal(sceneKey: string, snapshot: Record<string, unk
 export function clearSceneLocal(sceneKey: string): void {
   delete sceneLocals[sceneKey]
 }
+
+/** Clears all scene-local storage (e.g. new game from session menu). */
+export function clearAllSceneLocals(): void {
+  for (const k of Object.keys(sceneLocals)) {
+    delete sceneLocals[k]
+  }
+}

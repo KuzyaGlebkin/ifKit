@@ -5,8 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "build:tauri-web": "tsc && vite build --config vite.config.tauri.ts",
+    "i18n:extract": "node scripts/extract-game-i18n.mjs && node scripts/extract-ui-i18n.mjs",
+    "i18n:extract-game": "node scripts/extract-game-i18n.mjs",
+    "i18n:extract-ui": "node scripts/extract-ui-i18n.mjs",
+    "build": "npm run i18n:extract && tsc && vite build",
+    "build:tauri-web": "npm run i18n:extract && tsc && vite build --config vite.config.tauri.ts",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
