@@ -3,9 +3,7 @@ import { scenes } from './scenes'
 import { initialState } from './state'
 import type { GameState } from './state'
 import enUi from './locales/en.ui.json'
-import byUi from './locales/by.ui.json'
 import enGame from './locales/en.game.json'
-import byGame from './locales/by.game.json'
 
 defineGame({
   sourceLanguage: 'ru',
@@ -29,6 +27,5 @@ defineGame({
   scenes,
   locales: {
     en: { game: enGame, ui: enUi },
-    by: { game: byGame, ui: byUi },
   },
 })
