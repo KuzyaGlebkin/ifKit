@@ -1,7 +1,7 @@
 import { createElement, Plus, Save, Settings } from 'lucide'
 import type { IconNode } from 'lucide'
 import { stopMusicPlaybackForMenu } from './audio'
-import { u } from './i18n'
+import { u, translateGameString } from './i18n'
 import { UI } from './ui-keys'
 import { persistAutoFromSnapshot } from './saves'
 import {
@@ -30,8 +30,27 @@ let _playing = false
 let _root: HTMLElement | null = null
 let _firstKey = ''
 let _historySize = 20
+let _metaTitleSource = ''
+let _metaDescriptionSource = ''
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _initialState: any = null
+
+function applySessionMainMenuTitleAndDescription(): void {
+  if (!_root) return
+  const titleEl = _root.querySelector('#ifk-session-menu-title-text')
+  if (titleEl) titleEl.textContent = translateGameString(_metaTitleSource)
+  const descEl = _root.querySelector('#ifk-session-menu-description')
+  if (!descEl) return
+  if (!_metaDescriptionSource.trim()) {
+    descEl.textContent = ''
+    descEl.setAttribute('hidden', '')
+    return
+  }
+  const shown = translateGameString(_metaDescriptionSource)
+  descEl.textContent = shown
+  if (!shown.trim()) descEl.setAttribute('hidden', '')
+  else descEl.removeAttribute('hidden')
+}
 
 function applyShellVisibility(menuVisible: boolean): void {
   document.documentElement.classList.toggle('ifk-session-menu-active', menuVisible)
@@ -79,6 +98,7 @@ export function refreshSessionMainMenuChrome(): void {
   if (loadLabel) loadLabel.textContent = u(UI.sessionLoadGame)
   _root.querySelector('#ifk-session-menu-settings')?.setAttribute('aria-label', u(UI.toolbarSettings))
   _root.querySelector('#ifk-session-menu-settings .ifk-btn-label')!.textContent = u(UI.toolbarSettings)
+  applySessionMainMenuTitleAndDescription()
 }
 
 export function initSessionMainMenu(options: {
@@ -92,6 +112,8 @@ export function initSessionMainMenu(options: {
   _firstKey     = options.firstKey
   _initialState = options.initialState
   _historySize  = options.historySize
+  _metaTitleSource       = options.title
+  _metaDescriptionSource = options.description ?? ''
 
   const existing = document.getElementById('ifk-session-menu-root')
   if (!existing) {
@@ -120,15 +142,6 @@ export function initSessionMainMenu(options: {
       </div>
     </div>
   `.replace(/\n\s+/g, '\n')
-
-  const titleEl = document.getElementById('ifk-session-menu-title-text')
-  if (titleEl) titleEl.textContent = options.title
-  const descEl = document.getElementById('ifk-session-menu-description')
-  if (descEl) {
-    const d = options.description ?? ''
-    descEl.textContent = d
-    if (!d.trim()) descEl.setAttribute('hidden', '')
-  }
 
   const brandSlot = document.getElementById('ifk-session-menu-brand-slot')
   const svgSource = document.querySelector('#btn-brand .ifk-brand-logo-svg')

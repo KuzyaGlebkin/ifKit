@@ -189,6 +189,15 @@ export function t(strings: TemplateStringsArray, ...values: unknown[]): string {
   return template.replace(/\{(\d+)\}/g, (_, i) => String(values[Number(i)] ?? ''))
 }
 
+/**
+ * Resolve a game locale string without template interpolation (same lookup/fallback as `t` for a plain key).
+ */
+export function translateGameString(sourceKey: string): string {
+  const tr = _game[_resolvedLang]?.[sourceKey]
+  const template = tr !== undefined && tr !== '' ? tr : sourceKey
+  return template.replace(/\{(\d+)\}/g, () => '')
+}
+
 /** Engine / chrome UI string by stable key. */
 export function u(key: UiKey | string): string {
   const k = key as UiKey
