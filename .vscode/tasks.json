@@ -30,6 +30,12 @@
           "endsPattern": "Local:\\s+https?://\\S+"
         }
       }
+    },
+    {
+      "label": "Build: web (npm run build)",
+      "type": "npm",
+      "script": "build",
+      "group": "build"
     }
   ]
 }

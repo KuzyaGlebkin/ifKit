@@ -34,6 +34,23 @@
       "webRoot": "${workspaceFolder}/src",
       "preLaunchTask": "Dev: Tauri (npm run tauri:dev)",
       "runtimeExecutable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+    },
+    {
+      "name": "Web: built HTML (Edge)",
+      "type": "msedge",
+      "request": "launch",
+      "url": "file:///${workspaceFolder}/dist/ifkit_0.1.0.html",
+      "webRoot": "${workspaceFolder}/src",
+      "preLaunchTask": "Build: web (npm run build)"
+    },
+    {
+      "name": "Web: built HTML (Chrome)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "file:///${workspaceFolder}/dist/ifkit_0.1.0.html",
+      "webRoot": "${workspaceFolder}/src",
+      "preLaunchTask": "Build: web (npm run build)",
+      "runtimeExecutable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
     }
   ]
 }
