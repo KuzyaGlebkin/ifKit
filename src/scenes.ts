@@ -1,7 +1,7 @@
 import adventureMusic from './assets/Adventure.m4a'
 import coinPickupSound from './assets/impactGeneric_light_001.ogg'
 import branchPickupSound from './assets/impactWood_heavy_001.ogg'
-import { H1, P, Phtml, em, strong, t, PlayMusic, Sound } from './ifKit'
+import { H1, P, em, strong, t, PlayMusic, Sound } from './ifKit'
 import type { GameState } from './state'
 import type { SceneContext } from './ifKit'
 
@@ -38,8 +38,7 @@ export const scenes = {
     PlayMusic(adventureMusic)
     H1`Поляна`
     const branchNote = state.hasBranch ? t`В руке у тебя ${strong`ветка`}.` : ''
-    Phtml(t`На поляне тихо.` + (branchNote ? ' ' + branchNote : ''))
-    P`На поляне тихо без phtml ${branchNote}`
+    P`На поляне тихо.${branchNote ? ' ' + branchNote : ''}`
 
     goto('start')`Вернуться в лес`
   },
