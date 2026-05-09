@@ -47,12 +47,26 @@ export function restoreActiveBuffer(): void {
   activeTarget = targetStack.pop() ?? 'scene'
 }
 
-export function composeScene(): string {
-  const scene = htmlBuffer.replace(
+function wrapSeenRegion(scopeKind: string, chunk: string): string {
+  if (!chunk.trim()) return ''
+  return `<div data-ifk-seen-scope="${scopeKind}" class="ifk-seen-scope">${chunk}</div>`
+}
+
+export function composeScene(fragmentSeenRegions = false): string {
+  const sceneInner = htmlBuffer.replace(
     /<div data-slot="([^"]+)"><\/div>/g,
     (_, id: string) => slotBuffers[id] ?? '',
   )
-  return beforeBuffer + scene + afterBuffer
+  const before = beforeBuffer
+  const after = afterBuffer
+  if (!fragmentSeenRegions) {
+    return before + sceneInner + after
+  }
+  return (
+    wrapSeenRegion('static', before) +
+    wrapSeenRegion('scene', sceneInner) +
+    wrapSeenRegion('static', after)
+  )
 }
 
 export function addAct(label: string, handler: () => void): void {
@@ -63,8 +77,8 @@ export function addGoto(label: string, handler: () => void): void {
   gotoBuffer.push({ label, handler })
 }
 
-export function flushComposedToDOM(element: HTMLElement): void {
-  element.innerHTML = composeScene()
+export function flushComposedToDOM(element: HTMLElement, fragmentSeenRegions = false): void {
+  element.innerHTML = composeScene(fragmentSeenRegions)
 }
 
 export function flushActsToDOM(element: HTMLElement): void {
