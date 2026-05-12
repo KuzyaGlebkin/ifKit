@@ -2,30 +2,34 @@
 
 const CROSSFADE_MS = 1000
 
-export const SCREEN_READER_MUSIC_ATTENUATION = 0.25
-
 let _ctx: AudioContext | null = null
 let _masterMusicGain: GainNode | null = null
 let _masterSoundGain: GainNode | null = null
+let _masterOutputGain: GainNode | null = null
 
 let _nominalMusic = 0.8
 let _nominalSound = 1.0
+let _nominalMaster = 1.0
 let _musicMuted = false
 let _soundMuted = false
-let _quietMusicForScreenReader = false
+let _masterMuted = false
 
-function effectiveMusicGain(): number {
-  const base = _nominalMusic * (_musicMuted ? 0 : 1)
-  return base * (_quietMusicForScreenReader ? SCREEN_READER_MUSIC_ATTENUATION : 1)
+function channelMusicGain(): number {
+  return _nominalMusic * (_musicMuted ? 0 : 1)
 }
 
-function effectiveSoundGain(): number {
+function channelSoundGain(): number {
   return _nominalSound * (_soundMuted ? 0 : 1)
 }
 
+function masterOutputMultiplier(): number {
+  return _nominalMaster * (_masterMuted ? 0 : 1)
+}
+
 function applyMasterGains(): void {
-  if (_masterMusicGain) _masterMusicGain.gain.value = effectiveMusicGain()
-  if (_masterSoundGain) _masterSoundGain.gain.value = effectiveSoundGain()
+  if (_masterMusicGain) _masterMusicGain.gain.value = channelMusicGain()
+  if (_masterSoundGain) _masterSoundGain.gain.value = channelSoundGain()
+  if (_masterOutputGain) _masterOutputGain.gain.value = masterOutputMultiplier()
 }
 
 const _bufferCache = new Map<string, AudioBuffer>()
@@ -42,13 +46,17 @@ function getContext(): AudioContext {
 
   _ctx = new AudioContext()
 
+  _masterOutputGain = _ctx.createGain()
+  _masterOutputGain.gain.value = masterOutputMultiplier()
+  _masterOutputGain.connect(_ctx.destination)
+
   _masterMusicGain = _ctx.createGain()
-  _masterMusicGain.gain.value = effectiveMusicGain()
-  _masterMusicGain.connect(_ctx.destination)
+  _masterMusicGain.gain.value = channelMusicGain()
+  _masterMusicGain.connect(_masterOutputGain)
 
   _masterSoundGain = _ctx.createGain()
-  _masterSoundGain.gain.value = effectiveSoundGain()
-  _masterSoundGain.connect(_ctx.destination)
+  _masterSoundGain.gain.value = channelSoundGain()
+  _masterSoundGain.connect(_masterOutputGain)
 
   const resume = () => { _ctx?.resume() }
   document.addEventListener('click', resume, { once: true })
@@ -179,8 +187,13 @@ export function setMusicMuted(muted: boolean): void {
   applyMasterGains()
 }
 
-export function setQuietMusicForScreenReader(on: boolean): void {
-  _quietMusicForScreenReader = on
+export function setMasterVolume(v: number): void {
+  _nominalMaster = v
+  applyMasterGains()
+}
+
+export function setMasterMuted(muted: boolean): void {
+  _masterMuted = muted
   applyMasterGains()
 }
 
@@ -194,12 +207,14 @@ export function initAudioVolumes(
   soundVolume: number,
   musicMuted = false,
   soundMuted = false,
-  quietMusicForScreenReader = false,
+  masterVolume = 1,
+  masterMuted = false,
 ): void {
   _nominalMusic = musicVolume
   _nominalSound = soundVolume
   _musicMuted = musicMuted
   _soundMuted = soundMuted
-  _quietMusicForScreenReader = quietMusicForScreenReader
+  _nominalMaster = masterVolume
+  _masterMuted = masterMuted
   applyMasterGains()
 }

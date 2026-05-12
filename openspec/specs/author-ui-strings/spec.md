@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+
+Извлечение и шаблоны строк chrome/UI для авторов игр и переводчиков.
+## Requirements
 
 ### Requirement: Источник стабильных ключей UI для `u()`
 

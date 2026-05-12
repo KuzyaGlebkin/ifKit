@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+
+Зоны разметки страницы сцены: текст, действия, переходы и порядок фокуса.
+## Requirements
 
 ### Requirement: Структурные зоны макета без ARIA-обязательств
 `index.html` SHALL содержать `#controls` и `#content`. Движок SHALL создавать внутри `#content` вложенные зоны, включая `#scene-content`, `#scene-acts`, `#scene-gotos`, как в текущей реализации `engine`. Наличие `role`, `aria-label` и иных ARIA-атрибутов на этих контейнерах not required. Зона `#static` не создаётся (как и ранее).

@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+
+История ходов: undo/redo, стек снимков состояния и интеграция со сценами.
+## Requirements
 
 ### Requirement: Снимок состояния при каждом act и goto
 Движок SHALL записывать снимок `{ sceneKey, state, sceneLocals }` в кольцевой буфер истории **до** выполнения колбэка при каждом `act` и при каждом `goto`.

@@ -6,7 +6,8 @@ import {
   setSoundVolume,
   setMusicMuted,
   setSoundMuted,
-  setQuietMusicForScreenReader,
+  setMasterVolume,
+  setMasterMuted,
 } from './audio'
 import { u, setLanguageOrAuto } from './i18n'
 import { UI } from './ui-keys'
@@ -101,6 +102,16 @@ function buildModal(): HTMLElement {
         </div>
 
         <div class="ifk-settings-row ifk-settings-row--volume">
+          <span class="ifk-settings-label" id="ifk-master-label" data-ifk-ui="${UI.settingsMasterVolume}">${u(UI.settingsMasterVolume)}</span>
+          <input type="checkbox" id="ifk-master-on" class="ifk-checkbox ifk-settings-audio" data-ifk-ui-aria="${UI.settingsMasterEnabled}">
+          <div class="ifk-range-wrap">
+            <input type="range" id="ifk-master-vol"
+                   min="0" max="1" step="0.1" aria-labelledby="ifk-master-label">
+            <span id="ifk-master-vol-val" class="ifk-range-val">100%</span>
+          </div>
+        </div>
+
+        <div class="ifk-settings-row ifk-settings-row--volume">
           <span class="ifk-settings-label" id="ifk-music-label" data-ifk-ui="${UI.settingsMusic}">${u(UI.settingsMusic)}</span>
           <input type="checkbox" id="ifk-music-on" class="ifk-checkbox ifk-settings-audio" data-ifk-ui-aria="${UI.settingsMusicEnabled}">
           <div class="ifk-range-wrap">
@@ -108,12 +119,6 @@ function buildModal(): HTMLElement {
                    min="0" max="1" step="0.1" aria-labelledby="ifk-music-label">
             <span id="ifk-music-vol-val" class="ifk-range-val">80%</span>
           </div>
-        </div>
-
-        <div class="ifk-settings-row ifk-settings-row--volume">
-          <span class="ifk-settings-label" id="ifk-quiet-music-sr-label" data-ifk-ui="${UI.settingsQuietMusicSr}">${u(UI.settingsQuietMusicSr)}</span>
-          <input type="checkbox" id="ifk-quiet-music-sr" class="ifk-checkbox ifk-settings-audio" aria-labelledby="ifk-quiet-music-sr-label">
-          <div class="ifk-range-wrap" aria-hidden="true"></div>
         </div>
 
         <div class="ifk-settings-row ifk-settings-row--volume">
@@ -171,6 +176,14 @@ function syncToDOM(settings: Settings): void {
   if (fontRange) fontRange.value = String(settings.fontSize)
   if (fontVal)   fontVal.textContent = asPercent(settings.fontSize)
 
+  const masterOn = backdrop.querySelector<HTMLInputElement>('#ifk-master-on')
+  const masterRange = backdrop.querySelector<HTMLInputElement>('#ifk-master-vol')
+  const masterVal   = backdrop.querySelector('#ifk-master-vol-val')
+  if (masterOn) masterOn.checked = !settings.masterMuted
+  if (masterRange) masterRange.value = String(settings.masterVolume)
+  if (masterVal)   masterVal.textContent = formatVolumeLevel(settings.masterVolume)
+  if (masterRange) masterRange.setAttribute('aria-valuetext', formatVolumeLevel(settings.masterVolume))
+
   // Music volume + on/off (checkbox checked = not muted)
   const musicOn = backdrop.querySelector<HTMLInputElement>('#ifk-music-on')
   const musicRange = backdrop.querySelector<HTMLInputElement>('#ifk-music-vol')
@@ -179,9 +192,6 @@ function syncToDOM(settings: Settings): void {
   if (musicRange) musicRange.value = String(settings.musicVolume)
   if (musicVal)   musicVal.textContent = formatVolumeLevel(settings.musicVolume)
   if (musicRange) musicRange.setAttribute('aria-valuetext', formatVolumeLevel(settings.musicVolume))
-
-  const quietSr = backdrop.querySelector<HTMLInputElement>('#ifk-quiet-music-sr')
-  if (quietSr) quietSr.checked = settings.quietMusicForScreenReader
 
   // Sound volume + on/off (checkbox checked = not muted)
   const soundOn = backdrop.querySelector<HTMLInputElement>('#ifk-sound-on')
@@ -211,7 +221,8 @@ function commit(updated: Partial<Settings>): void {
   setSoundVolume(_current.soundVolume)
   setMusicMuted(_current.musicMuted)
   setSoundMuted(_current.soundMuted)
-  setQuietMusicForScreenReader(_current.quietMusicForScreenReader)
+  setMasterVolume(_current.masterVolume)
+  setMasterMuted(_current.masterMuted)
   syncToDOM(_current)
 }
 
@@ -304,6 +315,11 @@ export function initSettingsModal(
     commit({ fontSize: val })
   })
 
+  backdrop.querySelector('#ifk-master-vol')?.addEventListener('input', (e) => {
+    const val = parseFloat((e.target as HTMLInputElement).value)
+    commit({ masterVolume: val })
+  })
+
   // Music volume slider
   backdrop.querySelector('#ifk-music-vol')?.addEventListener('input', (e) => {
     const val = parseFloat((e.target as HTMLInputElement).value)
@@ -316,6 +332,11 @@ export function initSettingsModal(
     commit({ soundVolume: val })
   })
 
+  backdrop.querySelector('#ifk-master-on')?.addEventListener('change', (e) => {
+    const on = (e.target as HTMLInputElement).checked
+    commit({ masterMuted: !on })
+  })
+
   backdrop.querySelector('#ifk-music-on')?.addEventListener('change', (e) => {
     const on = (e.target as HTMLInputElement).checked
     commit({ musicMuted: !on })
@@ -324,11 +345,6 @@ export function initSettingsModal(
   backdrop.querySelector('#ifk-sound-on')?.addEventListener('change', (e) => {
     const on = (e.target as HTMLInputElement).checked
     commit({ soundMuted: !on })
-  })
-
-  backdrop.querySelector('#ifk-quiet-music-sr')?.addEventListener('change', (e) => {
-    const on = (e.target as HTMLInputElement).checked
-    commit({ quietMusicForScreenReader: on })
   })
 
   // Language buttons
@@ -364,7 +380,8 @@ export function initSettingsModal(
     setSoundVolume(_current.soundVolume)
     setMusicMuted(_current.musicMuted)
     setSoundMuted(_current.soundMuted)
-    setQuietMusicForScreenReader(_current.quietMusicForScreenReader)
+    setMasterVolume(_current.masterVolume)
+    setMasterMuted(_current.masterMuted)
     syncToDOM(_current)
   })
 
@@ -382,7 +399,8 @@ export function initSettingsModal(
         setSoundVolume(_current.soundVolume)
         setMusicMuted(_current.musicMuted)
         setSoundMuted(_current.soundMuted)
-        setQuietMusicForScreenReader(_current.quietMusicForScreenReader)
+        setMasterVolume(_current.masterVolume)
+        setMasterMuted(_current.masterMuted)
         setShowUnseenHighlight(_current.showUnseenHighlight)
         syncToDOM(_current)
         rerenderForSettingsOrI18n()

@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+
+Канонические шаблоны JSON локалей для новых игр и выравнивания ключей.
+## Requirements
 
 ### Requirement: Канонические файлы шаблона локалей
 

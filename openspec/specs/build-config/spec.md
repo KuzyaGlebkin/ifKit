@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+
+Параметры сборки движка и игр (Vite, single-file, версионирование артефактов).
+## Requirements
 
 ### Requirement: Сборка в single-file HTML
 Проект SHALL собираться командой `npm run build` в один самодостаточный HTML-файл с инлайн JavaScript и CSS, не требующий веб-сервера для запуска. Имя этого файла в каталоге `dist/` SHALL быть `<npm_package_name>_<npm_package_version>.html`, где `npm_package_name` и `npm_package_version` — поля `name` и `version` корневого `package.json` репозитория (для текущего шаблона проекта при версии 0.1.0 — `ifkit_0.1.0.html`).

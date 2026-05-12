@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+
+Локальное состояние сцен и типобезопасный контекст для функций сцен.
+## Requirements
 
 ### Requirement: ctx.local API
 `SceneContext` SHALL предоставлять метод `local<T extends object>(defaults: T): T`. Метод SHALL возвращать мутируемый объект, тип которого выводится из `defaults`.

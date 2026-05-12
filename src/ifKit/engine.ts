@@ -151,7 +151,8 @@ export function defineGame<S extends object, K extends string>(
       currentSettings.soundVolume,
       currentSettings.musicMuted,
       currentSettings.soundMuted,
-      currentSettings.quietMusicForScreenReader,
+      currentSettings.masterVolume,
+      currentSettings.masterMuted,
     )
     initSeenContent()
     setShowUnseenHighlight(currentSettings.showUnseenHighlight)

@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+
+Абстракция хранилища, ключи `ifkit:*`, экспорт и импорт данных.
+## Requirements
 
 ### Requirement: StorageAdapter — единый интерфейс хранилища
 Движок SHALL определять интерфейс `StorageAdapter` с методами `get<T>(key): T | null`, `set<T>(key, value): void`, `remove(key): void`. Все модули движка, записывающие данные между сессиями, SHALL использовать этот интерфейс, а не обращаться к `localStorage` напрямую.

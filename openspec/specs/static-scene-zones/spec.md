@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+
+Функция `static` и слоты зон: контент вне и вокруг тела сцены.
+## Requirements
 
 ### Requirement: StaticContext — зонированный контекст для static-функции
 Движок SHALL передавать в функцию `static` расширенный контекст `StaticContext<S, K>`, который включает все поля `SceneContext<S, K>` (`act`, `goto`, `local`) плюс три zone-функции: `before(cb)`, `after(cb)`, `slot(id, cb)`. Вызов `before(cb)` выполняет `cb` и весь HTML, записанный внутри, окажется перед содержимым сцены. Вызов `after(cb)` — после содержимого сцены. Вызов `slot(id, cb)` — в месте, где сцена объявила `Slot(id)`.

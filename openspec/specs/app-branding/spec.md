@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+
+Фирменные элементы оболочки: favicon, логотип в навбаре, интерактивность и доступность.
+## Requirements
 
 ### Requirement: Favicon на основе if_fav со светлым глифом на тёмном круге
 

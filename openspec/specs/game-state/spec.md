@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+
+Модель состояния игры, клонирование и ограничения JSON-совместимости для сохранений.
+## Requirements
 
 ### Requirement: jsonClone utility
 Движок SHALL предоставлять внутреннюю функцию `jsonClone<T>(value: T): T`, реализованную как `JSON.parse(JSON.stringify(value))`. Все операции клонирования состояния в движке SHALL использовать только эту функцию.

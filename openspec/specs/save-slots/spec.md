@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+
+Именованные слоты сохранений, метаданные слотов и политика перезаписи.
+## Requirements
 
 ### Requirement: Структура SaveSlot
 Движок SHALL определять тип `SaveSlot` с полями: `id` (string), `savedAt` (ISO timestamp), `label` (текстовый thumbnail сцены), `actPreview` (string, первая подпись первого элемента act в `#scene-acts`), `gotoPreview` (string, первая подпись первого элемента goto в `#scene-gotos`), `sceneKey` (string), `state` (unknown), `sceneLocals` (Record | null). Записи в `localStorage` без ключей `actPreview` / `gotoPreview` SHALL при загрузке обрабатываться как пустые строки.
