@@ -218,3 +218,104 @@ export function initAudioVolumes(
   _masterMuted = masterMuted
   applyMasterGains()
 }
+
+// ── Background / unfocus: suspend/resume (Page Visibility + Tauri window events) ─
+
+/** Serialized so rapid hidden/blur/focus toggles don't interleave suspend/resume. */
+let _backgroundAudioChain: Promise<void> = Promise.resolve()
+
+/** True after we suspended a *running* context due to tab hidden or Tauri blur/suspend. */
+let _suspendedAudioForAppBackground = false
+
+function enqueueBackgroundAudio(step: () => Promise<void>): void {
+  _backgroundAudioChain = _backgroundAudioChain.then(step).catch(() => {})
+}
+
+/** Suspend output only when the context is already running (avoids bypassing autoplay policy). */
+function scheduleSuspendForAppBackground(): void {
+  enqueueBackgroundAudio(async () => {
+    const ctx = _ctx
+    if (!ctx) return
+    if (ctx.state === 'running') {
+      _suspendedAudioForAppBackground = true
+      await ctx.suspend()
+    }
+  })
+}
+
+function scheduleResumeForAppForeground(): void {
+  enqueueBackgroundAudio(async () => {
+    const ctx = _ctx
+    if (!ctx) return
+    if (!_suspendedAudioForAppBackground) return
+    _suspendedAudioForAppBackground = false
+    await ctx.resume()
+    // Mid-fade menu stop could resume audible output briefly; re-apply menu silence.
+    if (document.documentElement.classList.contains('ifk-session-menu-active')) {
+      await stopMusicPlaybackForMenu()
+    }
+  })
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    scheduleSuspendForAppBackground()
+  } else {
+    scheduleResumeForAppForeground()
+  }
+})
+
+let _tauriWindowAudioHooksInstalled = false
+let _tauriWindowAudioHooksPromise: Promise<void> | null = null
+
+async function setupTauriWindowAudioHooks(): Promise<void> {
+  if (_tauriWindowAudioHooksInstalled) return
+  if (typeof globalThis.window === 'undefined') return
+  if (!('__TAURI_INTERNALS__' in globalThis.window)) return
+
+  if (_tauriWindowAudioHooksPromise) {
+    await _tauriWindowAudioHooksPromise
+    return
+  }
+
+  _tauriWindowAudioHooksPromise = (async () => {
+    const { listen, TauriEvent } = await import('@tauri-apps/api/event')
+
+    await listen(TauriEvent.WINDOW_BLUR, () => {
+      scheduleSuspendForAppBackground()
+    })
+    await listen(TauriEvent.WINDOW_FOCUS, () => {
+      scheduleResumeForAppForeground()
+    })
+    await listen(TauriEvent.WINDOW_SUSPENDED, () => {
+      scheduleSuspendForAppBackground()
+    })
+    await listen(TauriEvent.WINDOW_RESUMED, () => {
+      scheduleResumeForAppForeground()
+    })
+
+    _tauriWindowAudioHooksInstalled = true
+  })()
+
+  try {
+    await _tauriWindowAudioHooksPromise
+  } catch {
+    _tauriWindowAudioHooksPromise = null
+  }
+}
+
+function scheduleTauriAudioHookInstallation(): void {
+  if (typeof globalThis.window === 'undefined') return
+
+  const tryInstall = (): void => {
+    void setupTauriWindowAudioHooks()
+  }
+
+  queueMicrotask(tryInstall)
+
+  if (globalThis.window.document.readyState !== 'complete') {
+    globalThis.window.addEventListener('load', tryInstall, { once: true })
+  }
+}
+
+scheduleTauriAudioHookInstallation()

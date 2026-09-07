@@ -1,6 +1,6 @@
-import { UI, type UiKey } from './ui-keys'
+﻿import { UI, type UiKey } from './ui-keys'
 
-/** Built-in UI strings for the game’s `sourceLanguage` until authors add `ui` to locales. */
+/** Built-in UI strings for the game's sourceLanguage until authors add ui to locales. */
 export const BUILTIN_UI: Record<string, Partial<Record<UiKey, string>>> = {
   ru: {
     [UI.langAuto]:          'Авто',
@@ -19,7 +19,7 @@ export const BUILTIN_UI: Record<string, Partial<Record<UiKey, string>>> = {
     [UI.settingsAccentEmerald]:  'Зелёный',
     [UI.settingsMusic]:       'Музыка',
     [UI.settingsMusicEnabled]: 'Включить музыку',
-    [UI.settingsMasterVolume]: 'Громкость',
+    [UI.settingsMasterVolume]: 'Общая',
     [UI.settingsMasterEnabled]: 'Включить звук',
     [UI.settingsSound]:       'Звуки',
     [UI.settingsSoundEnabled]: 'Включить звуки',
@@ -29,6 +29,10 @@ export const BUILTIN_UI: Record<string, Partial<Record<UiKey, string>>> = {
     [UI.settingsResetAll]:    'Сбросить настройки',
     [UI.settingsExport]:      'Экспорт',
     [UI.settingsImport]:      'Импорт',
+    [UI.settingsSectionScreen]:      'Экран',
+    [UI.settingsSectionVolume]:      'Громкость',
+    [UI.settingsSectionLang]:        'Язык',
+    [UI.settingsSectionHighlight]:   'Подсветка текста',
 
     [UI.savesTitle]:            'Сохранения',
     [UI.savesAuto]:             'Авто',

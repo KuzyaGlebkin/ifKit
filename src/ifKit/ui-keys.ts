@@ -27,6 +27,12 @@ export const UI = {
   settingsExport:      'ui.settingsExport',
   settingsImport:      'ui.settingsImport',
 
+  // Settings section headings
+  settingsSectionScreen:      'ui.settingsSectionScreen',
+  settingsSectionVolume:      'ui.settingsSectionVolume',
+  settingsSectionLang:        'ui.settingsSectionLang',
+  settingsSectionHighlight:   'ui.settingsSectionHighlight',
+
   savesTitle:          'ui.savesTitle',
   savesClose:          'ui.savesClose',
   savesAuto:           'ui.savesAuto',

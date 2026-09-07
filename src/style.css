@@ -935,6 +935,14 @@ svg.ifk-lucide {
   }
 }
 
+/* ─── Settings modal sections ───────────────────────────────────────────────── */
+
+.ifk-settings-divider {
+  border: none;
+  border-top: 1px solid var(--ifk-color-border);
+  margin: 1rem 0;
+}
+
 /* ─── Modal responsive (mobile) ──────────────────────────────────────────── */
 @media (max-width: 480px) {
   .ifk-modal-dialog { max-width: 100%; }
