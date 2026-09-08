@@ -1,9 +1,15 @@
+import faviconUrl from './ifk-favicon.svg?url'
 import { defineGame, H2, P, t } from './ifKit'
 import { scenes } from './scenes'
 import { initialState } from './state'
 import type { GameState } from './state'
 import enUi from './locales/en.ui.json'
 import enGame from './locales/en.game.json'
+
+const link = document.createElement('link');
+link.rel = 'icon';
+link.href = faviconUrl;
+document.head.appendChild(link);
 
 defineGame({
   sourceLanguage: 'ru',
