@@ -16,7 +16,8 @@ export const UI = {
   settingsAccentEmerald: 'ui.settingsAccentEmerald',
   settingsMusic:       'ui.settingsMusic',
   settingsMusicEnabled:  'ui.settingsMusicEnabled',
-  settingsQuietMusicSr: 'ui.settingsQuietMusicSr',
+  settingsMasterVolume: 'ui.settingsMasterVolume',
+  settingsMasterEnabled: 'ui.settingsMasterEnabled',
   settingsSound:         'ui.settingsSound',
   settingsSoundEnabled:  'ui.settingsSoundEnabled',
   settingsVolumeLevel:  'ui.settingsVolumeLevel',
@@ -25,6 +26,12 @@ export const UI = {
   settingsResetAll:    'ui.settingsResetAll',
   settingsExport:      'ui.settingsExport',
   settingsImport:      'ui.settingsImport',
+
+  // Settings section headings
+  settingsSectionScreen:      'ui.settingsSectionScreen',
+  settingsSectionVolume:      'ui.settingsSectionVolume',
+  settingsSectionLang:        'ui.settingsSectionLang',
+  settingsSectionHighlight:   'ui.settingsSectionHighlight',
 
   savesTitle:          'ui.savesTitle',
   savesClose:          'ui.savesClose',

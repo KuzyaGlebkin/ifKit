@@ -12,11 +12,12 @@ const ACCENT_PRESETS: Record<Exclude<AccentPreset, 'default'>, { accent: string;
 export interface Settings {
   theme:                'light' | 'dark' | 'system'
   fontSize:             number   // multiplier 0.8–1.4
+  masterVolume:         number   // 0–1, scales all audio
+  masterMuted:          boolean
   musicVolume:          number   // 0–1
   soundVolume:          number   // 0–1
   musicMuted:           boolean
   soundMuted:           boolean
-  quietMusicForScreenReader: boolean
   language:             string   // lang code or '' for auto-detect
   showUnseenHighlight:  boolean  // highlight content the player hasn't seen yet
   accent:               AccentPreset
@@ -25,11 +26,12 @@ export interface Settings {
 export const engineDefaults: Settings = {
   theme:               'system',
   fontSize:            1.0,
+  masterVolume:        1.0,
+  masterMuted:         false,
   musicVolume:         0.8,
   soundVolume:         1.0,
   musicMuted:          false,
   soundMuted:          false,
-  quietMusicForScreenReader: false,
   language:            '',
   showUnseenHighlight: true,
   accent:                'default',
@@ -52,16 +54,22 @@ export function mergeDefaults(partial?: Partial<Settings>): Settings {
   return m
 }
 
+/** Stored blob may contain deprecated keys (stripped on load). */
+type StoredSettingsBlob = Partial<Settings> & { quietMusicForScreenReader?: boolean }
+
 export function loadSettings(authorDefaults: Settings): Settings {
-  const stored = storage.get<Partial<Settings>>(KEYS.settings)
+  const stored = storage.get<StoredSettingsBlob>(KEYS.settings)
   if (!stored || typeof stored !== 'object') return { ...authorDefaults }
-  const merged: Settings = { ...authorDefaults, ...stored }
+  const { quietMusicForScreenReader: _ignored, ...rest } = stored
+  void _ignored
+  const merged: Settings = { ...authorDefaults, ...rest }
   merged.accent = normalizeAccent(merged.accent, authorDefaults.accent)
   if (typeof merged.musicMuted !== 'boolean') merged.musicMuted = authorDefaults.musicMuted
   if (typeof merged.soundMuted !== 'boolean') merged.soundMuted = authorDefaults.soundMuted
-  if (typeof merged.quietMusicForScreenReader !== 'boolean') {
-    merged.quietMusicForScreenReader = authorDefaults.quietMusicForScreenReader
+  if (typeof merged.masterVolume !== 'number' || Number.isNaN(merged.masterVolume)) {
+    merged.masterVolume = authorDefaults.masterVolume
   }
+  if (typeof merged.masterMuted !== 'boolean') merged.masterMuted = authorDefaults.masterMuted
   return merged
 }
 

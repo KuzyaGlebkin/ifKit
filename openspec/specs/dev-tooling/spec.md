@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+
+Скрипты разработки: извлечение ключей i18n, шаблоны локалей и вспомогательные команды.
+## Requirements
 
 ### Requirement: ESLint настроен для TypeScript-кода
 Проект SHALL содержать конфигурацию ESLint с поддержкой TypeScript (`@typescript-eslint`), применимую ко всем `.ts`-файлам проекта.

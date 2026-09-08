@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+
+Теги сцены `PlayMusic` и `Sound`: декларативная музыка и императивные эффекты.
+## Requirements
 
 ### Requirement: PlayMusic — декларативный маркер фоновой музыки
 Движок SHALL экспортировать функцию `PlayMusic(src: string): void` из `src/ifKit/index.ts`. Вызов `PlayMusic(src)` в теле функции-сцены SHALL записывать `src` как намерение (`_pendingMusic`) для текущего цикла рендера. Реальное изменение воспроизведения происходит в `resolveAudioIntent()` после завершения рендера — не в момент вызова.

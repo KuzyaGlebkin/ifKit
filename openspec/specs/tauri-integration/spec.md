@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+
+Сборка и поведение настольной оболочки Tauri поверх web-артефакта.
+## Requirements
 
 ### Requirement: Tauri v2 проект инициализирован
 Репозиторий SHALL содержать директорию `src-tauri/` с корректным `tauri.conf.json`, `Cargo.toml` и capabilities-файлами, обеспечивающими работу плагинов `plugin-store`, `plugin-dialog` и `plugin-fs`.

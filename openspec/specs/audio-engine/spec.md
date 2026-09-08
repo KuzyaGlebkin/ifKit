@@ -1,5 +1,7 @@
-## ADDED Requirements
+## Purpose
 
+Встроенный аудиодвижок: ленивая инициализация Web Audio, музыка, звуки, громкость и mute.
+## Requirements
 ### Requirement: Ленивая инициализация AudioContext
 Аудиодвижок SHALL создавать `AudioContext` не при старте движка, а при первом вызове `PlayMusic()` или `Sound()`. Если автор не использует звук — AudioContext не создаётся никогда.
 
@@ -27,62 +29,55 @@
 ---
 
 ### Requirement: Граф мастер-гейнов
-Аудиодвижок SHALL поддерживать два мастер-узла типа `GainNode`: `_masterMusicGain` (управляет суммарной громкостью музыки) и `_masterSoundGain` (управляет суммарной громкостью звуков). Оба подключены к `AudioContext.destination`. Начальные значения gain SHALL быть **эффективными**: для музыки `musicVolume * (musicMuted ? 0 : 1) * (quietMusicForScreenReader ? α : 1)`, где `α` — фиксированная положительная константа движка, `0 < α ≤ 1` (одна и та же для всех сценариев); для звуков `soundVolume * (soundMuted ? 0 : 1)` на момент инициализации.
+Аудиодвижок SHALL поддерживать два мастер-узла типа `GainNode` для каналов: `_masterMusicGain` (номинал музыки с учётом `musicMuted`) и `_masterSoundGain` (номинал звуков с учётом `soundMuted`), а также общий выходной узел `_masterOutputGain` (или эквивалент), через который оба канала подключаются к `AudioContext.destination`. Узел `_masterOutputGain` SHALL отражать **общий** множитель `masterVolume * (masterMuted ? 0 : 1)`. Значения `_masterMusicGain` и `_masterSoundGain` на инициализации SHALL быть **канальными номиналами**: для музыки `musicVolume * (musicMuted ? 0 : 1)`; для звуков `soundVolume * (soundMuted ? 0 : 1)`. **Эффективная** слышимость каждого канала на выходе SHALL соответствует произведению канального gain и gain общего выхода.
 
-#### Scenario: Начальная громкость из настроек без mute и без тихой музыки для SR
-- **WHEN** AudioContext инициализируется при `musicVolume: 0.8`, `soundVolume: 1.0`, `musicMuted: false`, `soundMuted: false`, `quietMusicForScreenReader: false`
-- **THEN** `_masterMusicGain.gain.value === 0.8` и `_masterSoundGain.gain.value === 1.0`
+#### Scenario: Начальная громкость из настроек без mute
+
+- **WHEN** AudioContext инициализируется при `masterVolume: 1.0`, `masterMuted: false`, `musicVolume: 0.8`, `soundVolume: 1.0`, `musicMuted: false`, `soundMuted: false`
+- **THEN** эффективный выход музыки соответствует `0.8`, звуков — `1.0`
 
 #### Scenario: Начальная громкость при включённом mute музыки
-- **WHEN** AudioContext инициализируется при `musicVolume: 0.8`, `musicMuted: true`
-- **THEN** `_masterMusicGain.gain.value === 0.0`
 
-#### Scenario: Начальная громкость при включённом quietMusicForScreenReader и без mute
-- **WHEN** AudioContext инициализируется при `musicVolume: 0.8`, `musicMuted: false`, `quietMusicForScreenReader: true`, константа `α === 0.25`
-- **THEN** `_masterMusicGain.gain.value === 0.2`
+- **WHEN** AudioContext инициализируется при `musicVolume: 0.8`, `musicMuted: true`, `masterMuted: false`, `masterVolume: 1.0`
+- **THEN** канальный gain музыки равен `0`; слышимость музыки на выходе нулевая независимо от общего множителя
 
----
+#### Scenario: Общий множитель уменьшает оба канала
+
+- **WHEN** AudioContext инициализируется при `masterVolume: 0.5`, `masterMuted: false`, `musicVolume: 1.0`, `soundVolume: 1.0`, оба канальных mute выключены
+- **THEN** эффективная слышимость каждого канала на выходе соответствует `0.5`
 
 ### Requirement: Изменение громкости в реальном времени
-Аудиодвижок SHALL экспортировать функции `setMusicVolume(v: number): void` и `setSoundVolume(v: number): void`, которые обновляют **номинальную** громкость и немедленно выставляют соответствующий мастер-`gain`: для музыки — `v * (musicMuted ? 0 : 1) * (quietMusicForScreenReader ? α : 1)`, для звуков — `v * (soundMuted ? 0 : 1)`, где для музыки `α` — та же константа, что в требовании «Граф мастер-гейнов». Движок SHALL экспортировать функции `setMusicMuted(m: boolean): void` и `setSoundMuted(m: boolean): void` (или эквивалент с тем же поведением), которые обновляют флаг mute и **пересчитывают** `gain` из последнего номинала и текущих прочих факторов (для музыки — с учётом `quietMusicForScreenReader` и `α`). Функция `setQuietMusicForScreenReader` SHALL участвовать в пересчёте эффективного gain музыки согласно требованию «API флага тихой музыки для скринридера». Если AudioContext не инициализирован — вызовы являются no-op; номинал и флаги SHALL сохраняться для применения при следующей инициализации.
+Аудиодвижок SHALL экспортировать функции `setMusicVolume(v: number): void` и `setSoundVolume(v: number): void`, которые обновляют **номинальную** громкость канала и немедленно пересчитывают соответствующий канальный мастер-`gain` по правилам требования «Граф мастер-гейнов». Движок SHALL экспортировать `setMusicMuted(m: boolean): void` и `setSoundMuted(m: boolean): void`, которые обновляют флаг mute канала и пересчитывают канальный gain из последнего номинала. Движок SHALL экспортировать `setMasterVolume(v: number): void` и `setMasterMuted(m: boolean): void`, которые обновляют общий множитель и немедленно выставляют `_masterOutputGain` (или эквивалент) согласно «Граф мастер-гейнов». Если AudioContext не инициализирован — вызовы являются no-op для узлов; номиналы и флаги SHALL сохраняться для применения при следующей инициализации.
 
-#### Scenario: Слайдер музыки при выключенном mute и выключенном quietMusicForScreenReader
-- **WHEN** `musicMuted === false`, `quietMusicForScreenReader === false` и вызывается `setMusicVolume(0.4)`
-- **THEN** `_masterMusicGain.gain.value === 0.4`; играющий трек становится тише немедленно
+#### Scenario: Слайдер музыки при выключенных mute
 
-#### Scenario: Слайдер музыки при включённом mute не повышает gain
-- **WHEN** `musicMuted === true` и вызывается `setMusicVolume(0.9)`
-- **THEN** `_masterMusicGain.gain.value === 0.0`
+- **WHEN** все mute выключены, `masterVolume === 1.0` и вызывается `setMusicVolume(0.4)`
+- **THEN** эффективная громкость музыки на выходе соответствует `0.4`
 
-#### Scenario: Снятие mute восстанавливает громкость по номиналу с учётом quietMusicForScreenReader
-- **WHEN** номинал музыки был `0.6`, `musicMuted` переключают с `true` на `false`, `quietMusicForScreenReader === true` и `α === 0.25`
-- **THEN** `_masterMusicGain.gain.value === 0.15` (сразу после применения)
+#### Scenario: Слайдер музыки при включённом общем mute не повышает выход
+
+- **WHEN** `masterMuted === true` и вызывается `setMusicVolume(0.9)`
+- **THEN** слышимость музыки на выходе остаётся нулевой; сохранённый номинал допускается `0.9`
+
+#### Scenario: Снятие mute канала восстанавливает слышимость с учётом общего множителя
+
+- **WHEN** номинал музыки был `0.6`, `musicMuted` переключают с `true` на `false`, `masterVolume === 0.5`, `masterMuted === false`
+- **THEN** эффективная громкость музыки на выходе соответствует `0.3` сразу после применения
+
+#### Scenario: Изменение общей громкости действует на оба канала
+
+- **WHEN** каналы настроены на ненулевую слышимость и вызывается `setMasterVolume(0.25)`
+- **THEN** эффективные выходы обоих каналов масштабируются коэффициентом `0.25` относительно их канальных номиналов
 
 #### Scenario: setMusicVolume до инициализации не вызывает ошибок
+
 - **WHEN** `setMusicVolume(0.5)` вызывается до первого `PlayMusic`
 - **THEN** функция завершается без ошибки; значение применится при следующей инициализации
 
 #### Scenario: setMusicMuted до инициализации не вызывает ошибок
+
 - **WHEN** `setMusicMuted(true)` вызывается до первого `PlayMusic`
-- **THEN** функция завершается без ошибки; при инициализации музыка стартует с эффективным gain 0, если mute по-прежнему включён
-
----
-
-### Requirement: API флага тихой музыки для скринридера
-
-Аудиодвижок SHALL экспортировать функцию `setQuietMusicForScreenReader(on: boolean): void`, которая обновляет внутреннее состояние флага и **пересчитывает** эффективный gain мастера музыки по тем же правилам, что и при инициализации (см. требование «Граф мастер-гейнов»). Если AudioContext не инициализирован — вызов является no-op для гейна; флаг SHALL сохраняться для применения при следующей инициализации.
-
-#### Scenario: Включение флага снижает громкость уже играющей музыки
-
-- **WHEN** музыка воспроизводится с `musicMuted: false`, `musicVolume: 0.8`, `quietMusicForScreenReader: false`, затем вызывается `setQuietMusicForScreenReader(true)`
-- **THEN** `_masterMusicGain.gain.value` немедленно отражает произведение `0.8` на константу ослабления согласно формуле эффективной громкости
-
-#### Scenario: setQuietMusicForScreenReader до инициализации не вызывает ошибок
-
-- **WHEN** `setQuietMusicForScreenReader(true)` вызывается до первого `PlayMusic`
-- **THEN** функция завершается без ошибки; при инициализации музыка стартует с учётом сохранённого флага
-
----
+- **THEN** функция завершается без ошибки; при инициализации музыка стартует с нулевым канальным номиналом, если mute по-прежнему включён
 
 ### Requirement: Кэш декодированных AudioBuffer
 Аудиодвижок SHALL поддерживать `Map<string, AudioBuffer>`. При первом запросе src: `fetch(src)` → `decodeAudioData()` → запись в кэш. При повторном запросе того же src — возврат из кэша без повторного fetch.
@@ -141,7 +136,7 @@
 
 ### Requirement: Остановка фоновой музыки в стартовом меню без изменения настроек
 
-Когда движок переходит в режим стартового меню сессии (включая возврат по логотипу из навбара), воспроизведение фоновой музыки SHALL быть остановлено или приведено к нулевой слышимости согласно внутреннему API движка (например остановка источников и/или сброс audio intent), при этом **сохранённые** пользователем значения `musicMuted`, `musicVolume`, `quietMusicForScreenReader` и эквиваленты SHALL NOT изменяться в хранилище настроек. После выхода из меню в игру правила громкости и mute SHALL снова применяться к музыке согласно сцене и настройкам.
+Когда движок переходит в режим стартового меню сессии (включая возврат по логотипу из навбара), воспроизведение фоновой музыки SHALL быть остановлено или приведено к нулевой слышимости согласно внутреннему API движка (например остановка источников и/или сброс audio intent), при этом **сохранённые** пользователем значения `musicMuted`, `musicVolume`, `masterMuted`, `masterVolume` и эквиваленты для звуков SHALL NOT изменяться в хранилище настроек. После выхода из меню в игру правила громкости и mute SHALL снова применяться к музыке согласно сцене и настройкам.
 
 #### Scenario: Меню — музыка не слышна
 
@@ -152,8 +147,6 @@
 
 - **WHEN** перед входом в меню `musicMuted` был `false` и `musicVolume` был `0.5`, затем игрок вышел из меню в игру
 - **THEN** в пользовательских настройках по-прежнему `musicMuted: false` и номинальная громкость `0.5` (без побочного mute от самого факта меню)
-
----
 
 ### Requirement: Нет старта фоновой музыки сцены при обновлении только из настроек на сессионном главном меню
 
@@ -168,3 +161,4 @@
 
 - **WHEN** пользователь на сессионном главном меню сбрасывает учёт просмотренного контента из настроек
 - **THEN** фоновая музыка игры не начинает воспроизводиться до выхода с главного меню в игру
+

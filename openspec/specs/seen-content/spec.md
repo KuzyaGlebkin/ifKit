@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+
+Учёт уже показанного текста игроку и подсветка «нового» контента.
+## Requirements
 
 ### Requirement: initSeenContent загружает хранилище из localStorage
 Функция `initSeenContent()` SHALL читать ключ `ifkit:seen` из `localStorage` и разбирать его как `Record<string, string[]>`. При отсутствии ключа или невалидном JSON SHALL инициализировать пустой объект. Ошибки парсинга не должны прерывать запуск игры.

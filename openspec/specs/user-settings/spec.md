@@ -1,7 +1,9 @@
-## ADDED Requirements
+## Purpose
 
+Тип `Settings`, умолчания автора и движка, загрузка, применение к DOM и аудио.
+## Requirements
 ### Requirement: Схема настроек v1
-Движок SHALL определять тип `Settings` с полями: `theme: 'light' | 'dark' | 'system'`, `fontSize: number` (множитель 0.8–1.4), `musicVolume: number` (0–1), `soundVolume: number` (0–1), `musicMuted: boolean`, `soundMuted: boolean`, `quietMusicForScreenReader: boolean` (снижать **эффективную** громкость фоновой музыки для лучшей слышимости скринридера, без изменения сохранённого `musicVolume`), `language: string` (код языка или пустая строка для автоопределения), `showUnseenHighlight: boolean` (подсвечивать блоки контента, которые игрок ещё не видел), `accent: AccentPreset` — перечисление фиксированного набора (в коде: не менее `default` и нескольких именованных вариантов).
+Движок SHALL определять тип `Settings` с полями: `theme: 'light' | 'dark' | 'system'`, `fontSize: number` (множитель 0.8–1.4), `masterVolume: number` (0–1), `masterMuted: boolean`, `musicVolume: number` (0–1), `soundVolume: number` (0–1), `musicMuted: boolean`, `soundMuted: boolean`, `language: string` (код языка или пустая строка для автоопределения), `showUnseenHighlight: boolean` (подсвечивать блоки контента, которые игрок ещё не видел), `accent: AccentPreset` — перечисление фиксированного набора (в коде: не менее `default` и нескольких именованных вариантов).
 
 #### Scenario: Тип Settings статически проверяется
 - **WHEN** код пытается записать `{ theme: 'auto' }` как Settings
@@ -23,12 +25,12 @@
 - **WHEN** код записывает `{ musicMuted: true, soundMuted: false }` как часть Settings
 - **THEN** TypeScript принимает без ошибок
 
-#### Scenario: quietMusicForScreenReader — boolean
-- **WHEN** код записывает `{ quietMusicForScreenReader: true }` как часть Settings
+#### Scenario: masterMuted и masterVolume
+- **WHEN** код записывает `{ masterMuted: false, masterVolume: 0.5 }` как часть Settings
 - **THEN** TypeScript принимает без ошибок
 
 ### Requirement: Движковые умолчания настроек
-Движок SHALL определять константу `engineDefaults: Settings` со значениями: `theme: 'system'`, `fontSize: 1.0`, `musicVolume: 0.8`, `soundVolume: 1.0`, `musicMuted: false`, `soundMuted: false`, `quietMusicForScreenReader: false`, `language: ''`, `accent: 'default'`.
+Движок SHALL определять константу `engineDefaults: Settings` со значениями: `theme: 'system'`, `fontSize: 1.0`, `masterVolume: 1.0`, `masterMuted: false`, `musicVolume: 0.8`, `soundVolume: 1.0`, `musicMuted: false`, `soundMuted: false`, `language: ''`, `accent: 'default'`.
 
 #### Scenario: engineDefaults покрывают все поля Settings
 - **WHEN** `engineDefaults` используется как fallback
@@ -46,9 +48,9 @@
 - **WHEN** читаются `engineDefaults.musicMuted` и `engineDefaults.soundMuted`
 - **THEN** оба значения `false`
 
-#### Scenario: quietMusicForScreenReader по умолчанию выключен
-- **WHEN** читается `engineDefaults.quietMusicForScreenReader`
-- **THEN** значение `false`
+#### Scenario: общая громкость по умолчанию — полный уровень, без общего mute
+- **WHEN** читаются `engineDefaults.masterVolume` и `engineDefaults.masterMuted`
+- **THEN** `masterVolume === 1.0` и `masterMuted === false`
 
 ### Requirement: Движковые умолчания настроек — showUnseenHighlight
 `engineDefaults.showUnseenHighlight` SHALL равняться `true`.
@@ -116,10 +118,10 @@
 - **THEN** все настройки возвращаются к `authorDefaults` и изменения видны немедленно
 
 ### Requirement: Поля громкости подключены к аудиодвижку
-Поля `musicVolume` и `soundVolume` SHALL активно управлять **номинальной** громкостью воспроизведения. Поля `musicMuted` и `soundMuted` SHALL активно управлять **фактическим** отключением соответствующей ветки без изменения номинальных значений ползунков в хранилище. Поле `quietMusicForScreenReader` SHALL активно влиять на **эффективную** громкость музыки согласно `audio-engine` (множитель к номиналу при незаглушенной музыке), **не** изменяя сохранённый `musicVolume`. При изменении любого из этих полей через UI настроек движок SHALL немедленно приводить аудиомодуль в соответствие (вызовы `setMusicVolume` / `setSoundVolume`, `setMusicMuted` / `setSoundMuted`, `setQuietMusicForScreenReader` согласно `audio-engine`). Если аудиодвижок не инициализирован (AudioContext не создан) — вызов является no-op для гейна. При инициализации аудиодвижка он SHALL читать текущие значения из `loadSettings()` и устанавливать начальные **эффективные** значения мастер-гейнов с учётом mute и `quietMusicForScreenReader`.
+Поля `masterVolume` и `musicVolume`, `soundVolume` SHALL активно управлять **номинальными** уровнями согласно `audio-engine`. Поля `masterMuted`, `musicMuted` и `soundMuted` SHALL активно управлять **фактическим** отключением без изменения номинальных значений ползунков в хранилище. Эффективная слышимость SHALL быть произведением общего масштаба и пер-канальных номиналов и mute-факторов согласно `audio-engine`. При изменении любого из этих полей через UI настроек движок SHALL немедленно приводить аудиомодуль в соответствие (вызовы `setMasterVolume` / `setMasterMuted`, `setMusicVolume` / `setSoundVolume`, `setMusicMuted` / `setSoundMuted` согласно `audio-engine`). Если аудиодвижок не инициализирован (AudioContext не создан) — вызов является no-op для гейна. При инициализации аудиодвижок SHALL читать текущие значения из `loadSettings()` и устанавливать начальные **эффективные** значения с учётом всех перечисленных факторов.
 
 #### Scenario: Изменение слайдера музыки немедленно влияет на воспроизведение
-- **WHEN** пользователь перемещает слайдер музыки с 0.8 до 0.4 во время воспроизведения трека и музыка не заглушена
+- **WHEN** пользователь перемещает слайдер музыки с 0.8 до 0.4 во время воспроизведения трека, музыка не заглушена на канале и общий звук включён
 - **THEN** громкость трека изменяется немедленно без перезапуска
 
 #### Scenario: Изменение слайдера звуков влияет на следующие Sound-вызовы
@@ -127,8 +129,12 @@
 - **THEN** звуковой эффект не слышен
 
 #### Scenario: Громкость при старте берётся из сохранённых настроек
-- **WHEN** игра запускается, пользователь ранее установил `musicVolume: 0.5` и `musicMuted: false`
-- **THEN** при первом воспроизведении музыки эффективное значение мастер-гейна музыки соответствует `0.5`, дополнительно умноженное на `α` если `quietMusicForScreenReader` истинно
+- **WHEN** игра запускается, пользователь ранее установил `musicVolume: 0.5`, `musicMuted: false`, `masterVolume: 1.0`, `masterMuted: false`
+- **THEN** при первом воспроизведении музыки эффективная громкость соответствует полному произведению номиналов согласно `audio-engine`
+
+#### Scenario: Общий ползунок масштабирует и музыку, и звуки
+- **WHEN** воспроизводится музыка и звук, `masterMuted: false`, пользователь уменьшает `masterVolume` с `1.0` до `0.5`
+- **THEN** обе ветки становятся тише согласно общему множителю без изменения сохранённых `musicVolume` и `soundVolume`
 
 #### Scenario: setMusicVolume до инициализации AudioContext не вызывает ошибок
 - **WHEN** пользователь открывает настройки и двигает слайдер до первого взаимодействия со звуком
@@ -136,15 +142,15 @@
 
 #### Scenario: Mute музыки не затирает musicVolume в хранилище
 - **WHEN** пользователь установил `musicVolume: 0.7`, затем включил `musicMuted: true`, затем выключил `musicMuted`
-- **THEN** в хранилище по-прежнему `musicVolume: 0.7` и слышимость соответствует 70% (с учётом `quietMusicForScreenReader` и `α`) после снятия mute
+- **THEN** в хранилище по-прежнему `musicVolume: 0.7` и слышимость соответствует номиналу после снятия mute и с учётом общего масштаба
 
 #### Scenario: Mute звуков не затирает soundVolume
 - **WHEN** пользователь установил `soundVolume: 0.5`, включил `soundMuted: true`, затем выключил `soundMuted` и вызывает `Sound()`
-- **THEN** эффект слышен с громкостью согласно `0.5`
+- **THEN** эффект слышен с громкостью согласно `0.5` и общему масштабу
 
-#### Scenario: Включение quietMusicForScreenReader не затирает musicVolume
-- **WHEN** пользователь установил `musicVolume: 0.7`, затем включил `quietMusicForScreenReader: true`, затем выключил `quietMusicForScreenReader`
-- **THEN** в хранилище по-прежнему `musicVolume: 0.7`; при снятии флага слышимость возвращается к `0.7` (при отключённом mute)
+#### Scenario: Общий mute не затирает masterVolume
+- **WHEN** пользователь установил `masterVolume: 0.8`, затем включил `masterMuted: true`, затем выключил `masterMuted`
+- **THEN** в хранилище по-прежнему `masterVolume: 0.8`; слышимость восстанавливается согласно номиналам каналов и `0.8`
 
 ### Requirement: Обратная совместимость полей mute при загрузке
 Если в сохранённом объекте настроек отсутствуют `musicMuted` или `soundMuted`, `loadSettings` SHALL трактовать отсутствующее поле как `false` после слияния с `authorDefaults`.
@@ -152,15 +158,6 @@
 #### Scenario: Старый JSON без mute
 - **WHEN** в хранилище есть валидные настройки без ключей `musicMuted` / `soundMuted`
 - **THEN** результат `loadSettings` содержит `musicMuted: false` и `soundMuted: false` (или значения из `authorDefaults`, если автор их задал)
-
-### Requirement: Обратная совместимость quietMusicForScreenReader
-
-Если в сохранённом объекте настроек отсутствует `quietMusicForScreenReader`, `loadSettings` SHALL трактовать отсутствующее поле как `false` после слияния с `authorDefaults`.
-
-#### Scenario: Старый JSON без quietMusicForScreenReader
-
-- **WHEN** в хранилище есть валидные настройки без ключа `quietMusicForScreenReader`
-- **THEN** результат `loadSettings` содержит `quietMusicForScreenReader: false` (или значение из `authorDefaults`, если автор явно задал в `GameConfig`)
 
 ### Requirement: Значение `accent` в сбросе и authorDefaults
 Функция `resetSettings(authorDefaults)` **и** слияние `authorDefaults` SHALL **включать** `accent` так же, как остальные поля (т.е. автор может **не** указывать в `GameConfig` — **движковый** `default`).
@@ -182,3 +179,22 @@
 
 - **WHEN** в хранилище сохранено `accent: 'orange'`
 - **THEN** значение **не** меняется на другой пресет
+
+### Requirement: Игнорирование устаревшего ключа quietMusicForScreenReader в хранилище
+
+При чтении объекта настроек из хранилища движок SHALL отбрасывать поле `quietMusicForScreenReader`, если оно присутствует во входных данных: оно SHALL NOT входить в нормализованный результат `Settings`. При следующей записи настроек ключ SHALL NOT появляться в сохранённом JSON.
+
+#### Scenario: Старый JSON с quietMusicForScreenReader не ломает загрузку
+
+- **WHEN** в хранилище есть объект с `quietMusicForScreenReader: true` и без полей `masterVolume` / `masterMuted`
+- **THEN** `loadSettings` возвращает валидный `Settings` с `masterVolume` и `masterMuted` из слияния с `authorDefaults`, без поля `quietMusicForScreenReader` в типизированном результате
+
+### Requirement: Обратная совместимость masterVolume и masterMuted при загрузке
+
+Если в сохранённом объекте отсутствуют `masterVolume` или `masterMuted`, `loadSettings` SHALL трактовать отсутствующее поле как значение из `authorDefaults` после слияния (типично `masterVolume: 1.0`, `masterMuted: false` из движковых умолчаний).
+
+#### Scenario: Старый JSON без master
+
+- **WHEN** в хранилище есть валидные настройки без ключей `masterVolume` / `masterMuted`
+- **THEN** результат `loadSettings` содержит `masterVolume` и `masterMuted` из `authorDefaults`
+

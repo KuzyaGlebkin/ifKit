@@ -4,6 +4,8 @@ import { initialState } from './state'
 import type { GameState } from './state'
 import enUi from './locales/en.ui.json'
 import enGame from './locales/en.game.json'
+import { ruUi } from './locales/ru.ui'
+import { ruGame } from './locales/ru.game'
 
 defineGame({
   sourceLanguage: 'ru',
@@ -27,5 +29,6 @@ defineGame({
   scenes,
   locales: {
     en: { game: enGame, ui: enUi },
+    ru: { game: ruGame, ui: ruUi },
   },
 })

@@ -6,7 +6,8 @@ import {
   setSoundVolume,
   setMusicMuted,
   setSoundMuted,
-  setQuietMusicForScreenReader,
+  setMasterVolume,
+  setMasterMuted,
 } from './audio'
 import { u, setLanguageOrAuto } from './i18n'
 import { UI } from './ui-keys'
@@ -31,7 +32,77 @@ function formatVolumeLevel(fraction: number): string {
 
 // ─── Build DOM ────────────────────────────────────────────────────────────────
 
-function buildLangRow(): string {
+function buildScreenSection(): string {
+  return `
+    <section aria-labelledby="ifk-section-screen-label">
+      <h3 id="ifk-section-screen-label" data-ifk-ui="${UI.settingsSectionScreen}">${u(UI.settingsSectionScreen)}</h3>
+      <div class="ifk-settings-row ifk-settings-row--segment">
+        <span class="ifk-settings-label" data-ifk-ui="${UI.settingsTheme}">${u(UI.settingsTheme)}</span>
+        <div class="ifk-segment-group">
+          <button type="button" tabindex="-1" class="ifk-theme-btn" data-theme-value="light" data-ifk-ui="${UI.settingsThemeLight}">${u(UI.settingsThemeLight)}</button>
+          <button type="button" tabindex="-1" class="ifk-theme-btn" data-theme-value="dark" data-ifk-ui="${UI.settingsThemeDark}">${u(UI.settingsThemeDark)}</button>
+          <button type="button" tabindex="-1" class="ifk-theme-btn" data-theme-value="system" data-ifk-ui="${UI.settingsThemeSystem}">${u(UI.settingsThemeSystem)}</button>
+        </div>
+      </div>
+
+      <div class="ifk-settings-row">
+        <label class="ifk-settings-label" for="ifk-font-size" data-ifk-ui="${UI.settingsFont}">${u(UI.settingsFont)}</label>
+        <div class="ifk-range-wrap">
+          <input type="range" id="ifk-font-size" tabindex="-1"
+                 min="0.8" max="1.4" step="0.1">
+          <span id="ifk-font-size-val" class="ifk-range-val">100%</span>
+        </div>
+      </div>
+
+      <div class="ifk-settings-row ifk-settings-row--segment" id="ifk-settings-accent-row" aria-hidden="true">
+        <span class="ifk-settings-label" data-ifk-ui="${UI.settingsAccent}">${u(UI.settingsAccent)}</span>
+        <div class="ifk-segment-group">
+          <button type="button" tabindex="-1" class="ifk-accent-btn" data-accent-value="default" data-ifk-ui="${UI.settingsAccentDefault}">${u(UI.settingsAccentDefault)}</button>
+          <button type="button" tabindex="-1" class="ifk-accent-btn" data-accent-value="blue" data-ifk-ui="${UI.settingsAccentBlue}">${u(UI.settingsAccentBlue)}</button>
+          <button type="button" tabindex="-1" class="ifk-accent-btn" data-accent-value="orange" data-ifk-ui="${UI.settingsAccentOrange}">${u(UI.settingsAccentOrange)}</button>
+          <button type="button" tabindex="-1" class="ifk-accent-btn" data-accent-value="emerald" data-ifk-ui="${UI.settingsAccentEmerald}">${u(UI.settingsAccentEmerald)}</button>
+        </div>
+      </div>
+    </section>`
+}
+
+function buildVolumeSection(): string {
+  return `
+    <section aria-labelledby="ifk-section-volume-label">
+      <h3 id="ifk-section-volume-label" data-ifk-ui="${UI.settingsSectionVolume}">${u(UI.settingsSectionVolume)}</h3>
+      <div class="ifk-settings-row ifk-settings-row--volume">
+        <span class="ifk-settings-label" id="ifk-master-label" data-ifk-ui="${UI.settingsMasterVolume}">${u(UI.settingsMasterVolume)}</span>
+        <input type="checkbox" id="ifk-master-on" class="ifk-checkbox ifk-settings-audio" data-ifk-ui-aria="${UI.settingsMasterEnabled}">
+        <div class="ifk-range-wrap">
+          <input type="range" id="ifk-master-vol"
+                 min="0" max="1" step="0.1" aria-labelledby="ifk-master-label">
+          <span id="ifk-master-vol-val" class="ifk-range-val">100%</span>
+        </div>
+      </div>
+
+      <div class="ifk-settings-row ifk-settings-row--volume">
+        <span class="ifk-settings-label" id="ifk-music-label" data-ifk-ui="${UI.settingsMusic}">${u(UI.settingsMusic)}</span>
+        <input type="checkbox" id="ifk-music-on" class="ifk-checkbox ifk-settings-audio" data-ifk-ui-aria="${UI.settingsMusicEnabled}">
+        <div class="ifk-range-wrap">
+          <input type="range" id="ifk-music-vol"
+                 min="0" max="1" step="0.1" aria-labelledby="ifk-music-label">
+          <span id="ifk-music-vol-val" class="ifk-range-val">80%</span>
+        </div>
+      </div>
+
+      <div class="ifk-settings-row ifk-settings-row--volume">
+        <span class="ifk-settings-label" id="ifk-sound-label" data-ifk-ui="${UI.settingsSound}">${u(UI.settingsSound)}</span>
+        <input type="checkbox" id="ifk-sound-on" class="ifk-checkbox ifk-settings-audio" data-ifk-ui-aria="${UI.settingsSoundEnabled}">
+        <div class="ifk-range-wrap">
+          <input type="range" id="ifk-sound-vol"
+                 min="0" max="1" step="0.1" aria-labelledby="ifk-sound-label">
+          <span id="ifk-sound-vol-val" class="ifk-range-val">100%</span>
+        </div>
+      </div>
+    </section>`
+}
+
+function buildLangSection(): string {
   if (_languages.length < 2) return ''
   const autoBtn
     = `<button type="button" class="ifk-lang-btn" data-lang-value="" data-ifk-ui="${UI.langAuto}">${u(UI.langAuto)}</button>`
@@ -42,13 +113,30 @@ function buildLangRow(): string {
     )
     .join('')
   return `
-    <div class="ifk-settings-row ifk-settings-row--segment" id="ifk-lang-row" role="group" aria-labelledby="ifk-lang-label">
-      <span id="ifk-lang-label" class="ifk-settings-label" data-ifk-ui="${UI.settingsLangLabel}">${u(UI.settingsLangLabel)}</span>
-      <div class="ifk-segment-group">
-        ${autoBtn}
-        ${rest}
+    <section aria-labelledby="ifk-section-lang-label">
+      <h3 id="ifk-section-lang-label" data-ifk-ui="${UI.settingsSectionLang}">${u(UI.settingsSectionLang)}</h3>
+      <div class="ifk-settings-row ifk-settings-row--segment" id="ifk-lang-row" role="group" aria-labelledby="ifk-lang-label">
+        <span id="ifk-lang-label" class="ifk-settings-label" data-ifk-ui="${UI.settingsLangLabel}">${u(UI.settingsLangLabel)}</span>
+        <div class="ifk-segment-group">
+          ${autoBtn}
+          ${rest}
+        </div>
       </div>
-    </div>`
+    </section>`
+}
+
+function buildHighlightSection(): string {
+  return `
+    <section aria-labelledby="ifk-section-highlight-label">
+      <h3 id="ifk-section-highlight-label" data-ifk-ui="${UI.settingsSectionHighlight}">${u(UI.settingsSectionHighlight)}</h3>
+      <div class="ifk-settings-row">
+        <label class="ifk-settings-label" for="ifk-unseen-toggle" data-ifk-ui="${UI.settingsUnseenLabel}">${u(UI.settingsUnseenLabel)}</label>
+        <div class="ifk-unseen-wrap">
+          <input type="checkbox" id="ifk-unseen-toggle" class="ifk-checkbox">
+          <button id="ifk-seen-reset" class="ifk-btn-ghost ifk-btn-sm" type="button" data-ifk-ui="${UI.settingsResetSeen}">${u(UI.settingsResetSeen)}</button>
+        </div>
+      </div>
+    </section>`
 }
 
 function buildModal(): HTMLElement {
@@ -56,6 +144,15 @@ function buildModal(): HTMLElement {
   backdrop.id              = 'ifk-settings-backdrop'
   backdrop.className       = 'ifk-modal-backdrop'
   backdrop.setAttribute('hidden', '')
+
+  const sections = [
+    buildScreenSection(),
+    buildVolumeSection(),
+    buildLangSection(),
+    buildHighlightSection(),
+  ].filter(Boolean)
+
+  const body = sections.join('<hr class="ifk-settings-divider">')
 
   backdrop.innerHTML = `
     <div id="ifk-settings-dialog"
@@ -70,71 +167,7 @@ function buildModal(): HTMLElement {
       </div>
 
       <div class="ifk-modal-body">
-        <div id="ifk-settings-theme-font" aria-hidden="true">
-        <div class="ifk-settings-row ifk-settings-row--segment">
-          <span class="ifk-settings-label" data-ifk-ui="${UI.settingsTheme}">${u(UI.settingsTheme)}</span>
-          <div class="ifk-segment-group">
-            <button type="button" tabindex="-1" class="ifk-theme-btn" data-theme-value="light" data-ifk-ui="${UI.settingsThemeLight}">${u(UI.settingsThemeLight)}</button>
-            <button type="button" tabindex="-1" class="ifk-theme-btn" data-theme-value="dark" data-ifk-ui="${UI.settingsThemeDark}">${u(UI.settingsThemeDark)}</button>
-            <button type="button" tabindex="-1" class="ifk-theme-btn" data-theme-value="system" data-ifk-ui="${UI.settingsThemeSystem}">${u(UI.settingsThemeSystem)}</button>
-          </div>
-        </div>
-
-        <div class="ifk-settings-row">
-          <label class="ifk-settings-label" for="ifk-font-size" data-ifk-ui="${UI.settingsFont}">${u(UI.settingsFont)}</label>
-          <div class="ifk-range-wrap">
-            <input type="range" id="ifk-font-size" tabindex="-1"
-                   min="0.8" max="1.4" step="0.1">
-            <span id="ifk-font-size-val" class="ifk-range-val">100%</span>
-          </div>
-        </div>
-        </div>
-
-        <div class="ifk-settings-row ifk-settings-row--segment" id="ifk-settings-accent-row" aria-hidden="true">
-          <span class="ifk-settings-label" data-ifk-ui="${UI.settingsAccent}">${u(UI.settingsAccent)}</span>
-          <div class="ifk-segment-group">
-            <button type="button" tabindex="-1" class="ifk-accent-btn" data-accent-value="default" data-ifk-ui="${UI.settingsAccentDefault}">${u(UI.settingsAccentDefault)}</button>
-            <button type="button" tabindex="-1" class="ifk-accent-btn" data-accent-value="blue" data-ifk-ui="${UI.settingsAccentBlue}">${u(UI.settingsAccentBlue)}</button>
-            <button type="button" tabindex="-1" class="ifk-accent-btn" data-accent-value="orange" data-ifk-ui="${UI.settingsAccentOrange}">${u(UI.settingsAccentOrange)}</button>
-            <button type="button" tabindex="-1" class="ifk-accent-btn" data-accent-value="emerald" data-ifk-ui="${UI.settingsAccentEmerald}">${u(UI.settingsAccentEmerald)}</button>
-          </div>
-        </div>
-
-        <div class="ifk-settings-row ifk-settings-row--volume">
-          <span class="ifk-settings-label" id="ifk-music-label" data-ifk-ui="${UI.settingsMusic}">${u(UI.settingsMusic)}</span>
-          <input type="checkbox" id="ifk-music-on" class="ifk-checkbox ifk-settings-audio" data-ifk-ui-aria="${UI.settingsMusicEnabled}">
-          <div class="ifk-range-wrap">
-            <input type="range" id="ifk-music-vol"
-                   min="0" max="1" step="0.1" aria-labelledby="ifk-music-label">
-            <span id="ifk-music-vol-val" class="ifk-range-val">80%</span>
-          </div>
-        </div>
-
-        <div class="ifk-settings-row ifk-settings-row--volume">
-          <span class="ifk-settings-label" id="ifk-quiet-music-sr-label" data-ifk-ui="${UI.settingsQuietMusicSr}">${u(UI.settingsQuietMusicSr)}</span>
-          <input type="checkbox" id="ifk-quiet-music-sr" class="ifk-checkbox ifk-settings-audio" aria-labelledby="ifk-quiet-music-sr-label">
-          <div class="ifk-range-wrap" aria-hidden="true"></div>
-        </div>
-
-        <div class="ifk-settings-row ifk-settings-row--volume">
-          <span class="ifk-settings-label" id="ifk-sound-label" data-ifk-ui="${UI.settingsSound}">${u(UI.settingsSound)}</span>
-          <input type="checkbox" id="ifk-sound-on" class="ifk-checkbox ifk-settings-audio" data-ifk-ui-aria="${UI.settingsSoundEnabled}">
-          <div class="ifk-range-wrap">
-            <input type="range" id="ifk-sound-vol"
-                   min="0" max="1" step="0.1" aria-labelledby="ifk-sound-label">
-            <span id="ifk-sound-vol-val" class="ifk-range-val">100%</span>
-          </div>
-        </div>
-
-        ${buildLangRow()}
-
-        <div class="ifk-settings-row">
-          <label class="ifk-settings-label" for="ifk-unseen-toggle" data-ifk-ui="${UI.settingsUnseenLabel}">${u(UI.settingsUnseenLabel)}</label>
-          <div class="ifk-unseen-wrap">
-            <input type="checkbox" id="ifk-unseen-toggle" class="ifk-checkbox">
-            <button id="ifk-seen-reset" class="ifk-btn-ghost ifk-btn-sm" type="button" data-ifk-ui="${UI.settingsResetSeen}">${u(UI.settingsResetSeen)}</button>
-          </div>
-        </div>
+        ${body}
       </div>
 
       <div class="ifk-modal-footer">
@@ -171,6 +204,14 @@ function syncToDOM(settings: Settings): void {
   if (fontRange) fontRange.value = String(settings.fontSize)
   if (fontVal)   fontVal.textContent = asPercent(settings.fontSize)
 
+  const masterOn = backdrop.querySelector<HTMLInputElement>('#ifk-master-on')
+  const masterRange = backdrop.querySelector<HTMLInputElement>('#ifk-master-vol')
+  const masterVal   = backdrop.querySelector('#ifk-master-vol-val')
+  if (masterOn) masterOn.checked = !settings.masterMuted
+  if (masterRange) masterRange.value = String(settings.masterVolume)
+  if (masterVal)   masterVal.textContent = formatVolumeLevel(settings.masterVolume)
+  if (masterRange) masterRange.setAttribute('aria-valuetext', formatVolumeLevel(settings.masterVolume))
+
   // Music volume + on/off (checkbox checked = not muted)
   const musicOn = backdrop.querySelector<HTMLInputElement>('#ifk-music-on')
   const musicRange = backdrop.querySelector<HTMLInputElement>('#ifk-music-vol')
@@ -179,9 +220,6 @@ function syncToDOM(settings: Settings): void {
   if (musicRange) musicRange.value = String(settings.musicVolume)
   if (musicVal)   musicVal.textContent = formatVolumeLevel(settings.musicVolume)
   if (musicRange) musicRange.setAttribute('aria-valuetext', formatVolumeLevel(settings.musicVolume))
-
-  const quietSr = backdrop.querySelector<HTMLInputElement>('#ifk-quiet-music-sr')
-  if (quietSr) quietSr.checked = settings.quietMusicForScreenReader
 
   // Sound volume + on/off (checkbox checked = not muted)
   const soundOn = backdrop.querySelector<HTMLInputElement>('#ifk-sound-on')
@@ -211,7 +249,8 @@ function commit(updated: Partial<Settings>): void {
   setSoundVolume(_current.soundVolume)
   setMusicMuted(_current.musicMuted)
   setSoundMuted(_current.soundMuted)
-  setQuietMusicForScreenReader(_current.quietMusicForScreenReader)
+  setMasterVolume(_current.masterVolume)
+  setMasterMuted(_current.masterMuted)
   syncToDOM(_current)
 }
 
@@ -304,6 +343,11 @@ export function initSettingsModal(
     commit({ fontSize: val })
   })
 
+  backdrop.querySelector('#ifk-master-vol')?.addEventListener('input', (e) => {
+    const val = parseFloat((e.target as HTMLInputElement).value)
+    commit({ masterVolume: val })
+  })
+
   // Music volume slider
   backdrop.querySelector('#ifk-music-vol')?.addEventListener('input', (e) => {
     const val = parseFloat((e.target as HTMLInputElement).value)
@@ -316,6 +360,11 @@ export function initSettingsModal(
     commit({ soundVolume: val })
   })
 
+  backdrop.querySelector('#ifk-master-on')?.addEventListener('change', (e) => {
+    const on = (e.target as HTMLInputElement).checked
+    commit({ masterMuted: !on })
+  })
+
   backdrop.querySelector('#ifk-music-on')?.addEventListener('change', (e) => {
     const on = (e.target as HTMLInputElement).checked
     commit({ musicMuted: !on })
@@ -324,11 +373,6 @@ export function initSettingsModal(
   backdrop.querySelector('#ifk-sound-on')?.addEventListener('change', (e) => {
     const on = (e.target as HTMLInputElement).checked
     commit({ soundMuted: !on })
-  })
-
-  backdrop.querySelector('#ifk-quiet-music-sr')?.addEventListener('change', (e) => {
-    const on = (e.target as HTMLInputElement).checked
-    commit({ quietMusicForScreenReader: on })
   })
 
   // Language buttons
@@ -364,7 +408,8 @@ export function initSettingsModal(
     setSoundVolume(_current.soundVolume)
     setMusicMuted(_current.musicMuted)
     setSoundMuted(_current.soundMuted)
-    setQuietMusicForScreenReader(_current.quietMusicForScreenReader)
+    setMasterVolume(_current.masterVolume)
+    setMasterMuted(_current.masterMuted)
     syncToDOM(_current)
   })
 
@@ -382,7 +427,8 @@ export function initSettingsModal(
         setSoundVolume(_current.soundVolume)
         setMusicMuted(_current.musicMuted)
         setSoundMuted(_current.soundMuted)
-        setQuietMusicForScreenReader(_current.quietMusicForScreenReader)
+        setMasterVolume(_current.masterVolume)
+        setMasterMuted(_current.masterMuted)
         setShowUnseenHighlight(_current.showUnseenHighlight)
         syncToDOM(_current)
         rerenderForSettingsOrI18n()
