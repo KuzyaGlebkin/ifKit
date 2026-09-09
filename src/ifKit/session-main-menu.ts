@@ -10,7 +10,6 @@ import {
   resetGameToInitial,
   setSessionMenuExit,
 } from './scenes'
-import { resetSeenContent } from './seen-content'
 import { openSavesModal } from './saves-modal'
 import { openSettingsModal } from './settings-modal'
 
@@ -158,7 +157,6 @@ export function initSessionMainMenu(options: {
   mountMenuIcon(document.querySelector('#ifk-session-menu-settings .ifk-btn-icon'), Settings)
 
   document.getElementById('ifk-session-menu-new')?.addEventListener('click', () => {
-    resetSeenContent()
     resetGameToInitial(_initialState, _historySize)
     leaveSessionMenuToPlaying()
     void runGameLoop(_firstKey)

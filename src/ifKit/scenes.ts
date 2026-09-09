@@ -246,7 +246,7 @@ export async function runGameLoop(sceneKey: string): Promise<void> {
     _staticFn(state, staticCtx)
   }
 
-  flushComposedToDOM(_sceneEl)
+  flushComposedToDOM(_sceneEl, Boolean(_staticFn))
   markAndHighlight(_sceneEl, currentSceneKey, _showUnseenHighlight)
   flushActsToDOM(_actsEl)
   flushGotosToDOM(_gotosEl)

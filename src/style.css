@@ -344,6 +344,11 @@ svg.ifk-lucide {
   margin-top: calc(var(--ifk-spacing) * 0.5);
 }
 
+/* When static(...) wraps before/scene/after, space blocks inside each region (wrappers remain direct children of #scene-content). */
+.ifk-seen-scope > * + * {
+  margin-top: calc(var(--ifk-spacing) * 0.5);
+}
+
 /* ─── Acts zone ──────────────────────────────────────────────────────────── */
 #scene-acts {
   display: flex;
