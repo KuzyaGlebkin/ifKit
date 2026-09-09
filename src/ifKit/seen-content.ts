@@ -60,12 +60,14 @@ function isSeenScopeMarker(el: HTMLElement): boolean {
   return v === 'static' || v === 'scene'
 }
 
-function processLeafBlocks(region: HTMLElement, seenSet: Set<string>): boolean {
+function processLeafBlocks(region: HTMLElement, seenSet: Set<string>, addHighlight: boolean = true): boolean {
   let changed = false
   for (const el of Array.from(region.children) as HTMLElement[]) {
     const hash = hashString(el.innerHTML)
     if (!seenSet.has(hash)) {
-      el.classList.add('paragraph--unseen')
+      if (addHighlight) {
+        el.classList.add('paragraph--unseen')
+      }
       seenSet.add(hash)
       changed = true
     }
@@ -79,6 +81,33 @@ export function markAndHighlight(
   enabled: boolean,
 ): void {
   if (!enabled) return
+
+  // If this scene has never been seen before, we want to mark all content as seen
+  // (so that it doesn't get highlighted in the future) but without adding the highlight class.
+  if (!(_store.scenes[sceneKey])) {
+    // Process static content to mark as seen (without highlight)
+    const staticSet = new Set(_store.staticSeen)
+    // We also need a set for the scene content to store the seen hashes
+    const sceneSet = new Set<string>
+    const tops = Array.from(element.children) as HTMLElement[]
+    let touchedStatic = false
+    let processedSceneWrap = false
+    for (const child of tops) {
+      const scope = child.getAttribute('data-ifk-seen-scope')
+      if (scope === 'static') {
+        processLeafBlocks(child, staticSet, false) // addHighlight: false
+        touchedStatic = true
+      } else if (scope === 'scene') {
+        processLeafBlocks(child, sceneSet, false) // addHighlight: false
+        processedSceneWrap = true
+      }
+    }
+    if (touchedStatic) _store.staticSeen = Array.from(staticSet)
+    if (processedSceneWrap) _store.scenes[sceneKey] = Array.from(sceneSet)
+    storage.set(KEYS.seen, _store)
+    return
+  
+  }
 
   let dirty = false
   const sceneSet = new Set(_store.scenes[sceneKey] ?? [])
