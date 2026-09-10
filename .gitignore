@@ -3,3 +3,5 @@ dist/
 dist-tauri/
 src-tauri/icons/
 src/locales/
+cursor/
+pi/

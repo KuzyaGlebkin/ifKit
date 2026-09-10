@@ -39,9 +39,9 @@ function buildScreenSection(): string {
       <div class="ifk-settings-row ifk-settings-row--segment">
         <span class="ifk-settings-label" data-ifk-ui="${UI.settingsTheme}">${u(UI.settingsTheme)}</span>
         <div class="ifk-segment-group">
+          <button type="button" tabindex="-1" class="ifk-theme-btn" data-theme-value="system" data-ifk-ui="${UI.settingsThemeSystem}">${u(UI.settingsThemeSystem)}</button>
           <button type="button" tabindex="-1" class="ifk-theme-btn" data-theme-value="light" data-ifk-ui="${UI.settingsThemeLight}">${u(UI.settingsThemeLight)}</button>
           <button type="button" tabindex="-1" class="ifk-theme-btn" data-theme-value="dark" data-ifk-ui="${UI.settingsThemeDark}">${u(UI.settingsThemeDark)}</button>
-          <button type="button" tabindex="-1" class="ifk-theme-btn" data-theme-value="system" data-ifk-ui="${UI.settingsThemeSystem}">${u(UI.settingsThemeSystem)}</button>
         </div>
       </div>
 
