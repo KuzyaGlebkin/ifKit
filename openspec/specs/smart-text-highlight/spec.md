@@ -1,5 +1,7 @@
-## ADDED Requirements
+## Purpose
 
+Подсветка нового текста.
+## Requirements
 ### Requirement: Scene-based highlight control
 The system SHALL suppress text highlight for scenes that have not been shown before, preserving the existing highlight behavior for known scenes.
 

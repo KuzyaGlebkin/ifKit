@@ -32,9 +32,9 @@ function formatVolumeLevel(fraction: number): string {
 
 // ─── Build DOM ────────────────────────────────────────────────────────────────
 
-function buildScreenSection(): string {
+export function buildScreenSection(): string {
   return `
-    <section aria-labelledby="ifk-section-screen-label">
+    <section aria-hidden="true">
       <h3 id="ifk-section-screen-label" data-ifk-ui="${UI.settingsSectionScreen}">${u(UI.settingsSectionScreen)}</h3>
       <div class="ifk-settings-row ifk-settings-row--segment">
         <span class="ifk-settings-label" data-ifk-ui="${UI.settingsTheme}">${u(UI.settingsTheme)}</span>

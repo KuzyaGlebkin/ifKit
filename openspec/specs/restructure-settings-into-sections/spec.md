@@ -1,8 +1,7 @@
 ## Purpose
 Reorganize the settings modal UI from a flat list into four semantic sections for better discoverability and reduced cognitive load, without changing the underlying settings data model or persistence.
 
-## ADDED Requirements
-
+## Requirements
 ### Requirement: Section Structure
 The settings modal MUST render four `<section>` elements in this order:
 1. **Screen** (Экран) — Theme, Font Size, Accent
@@ -42,37 +41,54 @@ The settings modal MUST render four `<section>` elements in this order:
   - Reset seen history button
 
 ### Requirement: Visual Separation
+The settings modal SHALL render an `<hr>` element between each adjacent section and SHALL NOT render a trailing `<hr>` after the last section.
+
+#### Scenario: Visual Separation Between Sections
 - **WHEN** multiple sections are rendered
 - **THEN** an `<hr>` element separates each adjacent section
 - **THEN** no trailing `<hr>` after the last section
 
 ### Requirement: Accessibility
+The settings modal SHALL ensure that any rendered section has `aria-labelledby` pointing to its `<h3>` id. When the modal title is `<h2>`, section headings SHALL use `<h3>` for correct heading hierarchy. When navigating with keyboard, all controls SHALL remain reachable (no collapsible sections to manage).
+
+#### Scenario: Section Accessibility
 - **WHEN** any section renders
 - **THEN** the `<section>` has `aria-labelledby` pointing to its `<h3>` id
-- **WHEN** the modal title is `<h2>`
-- **THEN** section headings use `<h3>` for correct heading hierarchy
-- **WHEN** navigating with keyboard
-- **THEN** all controls remain reachable (no collapsible sections to manage)
+
+#### Scenario: Modal Title Heading Level
+- **WHEN** the settings modal opens
+- **THEN** the modal title is an `<h2>` and section headings are `<h3>`
+
+#### Scenario: Keyboard Navigation Reachability
+- **WHEN** navigating the settings modal with keyboard
+- **THEN** all controls remain reachable
 
 ### Requirement: i18n Support
+When `refreshSettingsModalI18n()` is called, section headings (`<h3>`) SHALL update to current language and `aria-labelledby` references SHALL remain valid.
+
+#### Scenario: i18n Update Section Headings
 - **WHEN** `refreshSettingsModalI18n()` is called
 - **THEN** section headings (`<h3>`) update to current language
+
+#### Scenario: i18n Update Aria-Labelledby
+- **WHEN** `refreshSettingsModalI18n()` is called
 - **THEN** `aria-labelledby` references remain valid
 
 ### Requirement: Existing Behavior Preserved
+When any setting control changes, `commit()` SHALL be called with updated partial settings, settings SHALL apply immediately (no save button). When the Reset button is clicked, all settings SHALL revert to author defaults. When Export/Import is clicked, functionality SHALL work identically to before.
+
+#### Scenario: Commit on Setting Change
 - **WHEN** any setting control changes
 - **THEN** `commit()` is called with updated partial settings
+
+#### Scenario: Immediate Apply
+- **WHEN** `commit()` is called with updated partial settings
 - **THEN** settings apply immediately (no save button)
+
+#### Scenario: Reset to Author Defaults
 - **WHEN** Reset button clicked
 - **THEN** all settings revert to author defaults
+
+#### Scenario: Export/Import Functionality
 - **WHEN** Export/Import clicked
 - **THEN** functionality works identically to before
-
-## UNCHANGED Requirements
-- Settings data model (`Settings` interface in `settings.ts`)
-- Storage schema and persistence (`loadSettings`, `saveSettings`)
-- Default values (`engineDefaults`, author overrides)
-- `applySettings()` DOM mutations (theme, font-size, accent CSS vars)
-- Audio sync (`setMusicVolume`, `setSoundVolume`, etc.)
-- Focus lock and modal open/close behavior
-- Language conditional display logic (≥2 languages)
