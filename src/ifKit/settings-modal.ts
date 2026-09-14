@@ -152,7 +152,7 @@ function buildModal(): HTMLElement {
     buildHighlightSection(),
   ].filter(Boolean)
 
-  const body = sections.join('<hr class="ifk-settings-divider">')
+  const body = sections.join('<hr class="ifk-settings-divider" aria-hidden="true">')
 
   backdrop.innerHTML = `
     <div id="ifk-settings-dialog"
