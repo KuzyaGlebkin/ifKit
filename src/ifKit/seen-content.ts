@@ -1,4 +1,6 @@
 import { storage, KEYS } from '@ifkit-storage'
+import { u } from './i18n'
+import { UI } from './ui-keys'
 
 type SeenContentStore = {
   scenes: Record<string, string[]>
@@ -66,6 +68,18 @@ function processLeafBlocks(region: HTMLElement, seenSet: Set<string>, addHighlig
     const hash = hashString(el.innerHTML)
     if (!seenSet.has(hash)) {
       if (addHighlight) {
+        // Create the img element for screen readers
+        const img = document.createElement('img');
+        img.role = 'img';
+        img.ariaLabel = u(UI.settingsUnseenLabel);
+        img.alt = '';
+        img.style.width = '0';
+        img.style.height = '0';
+        img.style.overflow = 'hidden';
+        img.style.display = 'block';
+        if (el.parentNode) {
+          el.parentNode.insertBefore(img, el);
+        }
         el.classList.add('paragraph--unseen')
       }
       seenSet.add(hash)
@@ -106,7 +120,7 @@ export function markAndHighlight(
     if (processedSceneWrap) _store.scenes[sceneKey] = Array.from(sceneSet)
     storage.set(KEYS.seen, _store)
     return
-  
+
   }
 
   let dirty = false

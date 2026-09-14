@@ -25,6 +25,7 @@ export const BUILTIN_UI: Record<string, Partial<Record<UiKey, string>>> = {
     [UI.settingsSoundEnabled]: 'Включить звуки',
     [UI.settingsVolumeLevel]: '{0} %',
     [UI.settingsUnseenLabel]: 'Новый текст',
+    [UI.newTextLabel]: 'Новый',
     [UI.settingsResetSeen]:   'Сбросить историю',
     [UI.settingsResetAll]:    'Сбросить настройки',
     [UI.settingsExport]:      'Экспорт',

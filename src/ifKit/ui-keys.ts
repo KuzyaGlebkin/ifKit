@@ -22,6 +22,8 @@ export const UI = {
   settingsSoundEnabled:  'ui.settingsSoundEnabled',
   settingsVolumeLevel:  'ui.settingsVolumeLevel',
   settingsUnseenLabel: 'ui.settingsUnseenLabel',
+  // New key for screen reader announcement of new text
+  newTextLabel: 'ui.newTextLabel',
   settingsResetSeen:   'ui.settingsResetSeen',
   settingsResetAll:    'ui.settingsResetAll',
   settingsExport:      'ui.settingsExport',
