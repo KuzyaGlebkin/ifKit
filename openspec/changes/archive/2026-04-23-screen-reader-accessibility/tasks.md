@@ -23,3 +23,7 @@
 
 - [x] 6.1 Обновить `openspec/specs/ui-zones/spec.md` (приоритет фокуса)
 - [x] 6.2 Обновить `openspec/specs/screen-reader/spec.md` (tabindex-подход вместо aria-live)
+
+## 7. scenes.ts — задержка фокуса для NVDA
+
+- [x] 7.1 Вставь двойной requestAnimationFrame перед focus() на #ifk-scene-focus-anchor, чтобы гарантировать, что скрин‑ридер успевает объявить начало сцены

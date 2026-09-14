@@ -259,6 +259,14 @@ export async function runGameLoop(sceneKey: string): Promise<void> {
   await resolveAudioIntent()
 
   if (prevSceneKey !== sceneKey) {
-    document.getElementById('ifk-scene-focus-anchor')?.focus({ preventScroll: true })
+    const anchor = document.getElementById('ifk-scene-focus-anchor')
+    // костыль, чтобы NVDA успевал понять, что фокус надо перенести в начало сцены.
+    // setTimeout(,0) и один requestAnimationFrame пробовал, иногда не переносит, нужно именно два
+    // в tauri всё ещё можно поймать момент, когда фокус не переходит, но пока видел только при очень быстром переключении
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        anchor?.focus({ preventScroll: true })
+      })
+    })
   }
 }
