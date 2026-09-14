@@ -1,5 +1,6 @@
 {
   "ui.langAuto": "Авто",
+  "ui.newTextLabel": "Новый",
   "ui.savesAuto": "Авто",
   "ui.savesClose": "Закрыть сохранения",
   "ui.savesConfirmDelete": "Удалить?",
@@ -43,7 +44,6 @@
   "ui.settingsThemeSystem": "Системная",
   "ui.settingsTitle": "Настройки",
   "ui.settingsUnseenLabel": "Новый текст",
-  "ui.newTextLabel": "Новый",
   "ui.settingsVolumeLevel": "{0} %",
   "ui.toolbarRedo": "Вперёд",
   "ui.toolbarSaves": "Сохранения",

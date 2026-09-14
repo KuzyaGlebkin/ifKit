@@ -1,5 +1,6 @@
 {
   "ui.langAuto": "Auto",
+  "ui.newTextLabel": "New",
   "ui.savesAuto": "Auto",
   "ui.savesClose": "Close saves",
   "ui.savesConfirmDelete": "Delete?",
@@ -43,7 +44,6 @@
   "ui.settingsThemeSystem": "System",
   "ui.settingsTitle": "Settings",
   "ui.settingsUnseenLabel": "New text",
-  "ui.newTextLabel": "New",
   "ui.settingsVolumeLevel": "{0}%",
   "ui.toolbarRedo": "Redo",
   "ui.toolbarSaves": "Saves",

@@ -25,7 +25,7 @@
   --ifk-radius:           6px;
   --ifk-spacing:          1rem;
 
-  --ifk-max-width:        720px;
+  --ifk-max-width:        45rem;
 
   /* Скроллбар: track/thumb от текущей темы (см. правила `scrollbar-color` / `::-webkit-scrollbar`) */
   --ifk-scrollbar-track: var(--ifk-color-surface);
@@ -451,7 +451,7 @@ svg.ifk-lucide {
   border-radius: var(--ifk-radius);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   width: 100%;
-  max-width: 480px;
+  max-width: 30rem;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -689,7 +689,7 @@ svg.ifk-lucide {
 
 /* ─── Saves modal specifics ──────────────────────────────────────────────── */
 .ifk-saves-dialog {
-  max-width: 840px;
+  max-width: 52.5rem;
 }
 
 .ifk-saves-body {
